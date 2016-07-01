@@ -442,7 +442,7 @@ class CMDBObject(dict):
 
     def _fetch_category_data(self, category_const):
         if category_const not in self.fields:
-            raise Exception('Object has no category %s in his type %s' % (category_const, self.type_object.type_const))
+            raise Exception('Object has no category %s in his type %s' % (category_const, self.type_object.const))
         category_object = get_category(category_const)
 
         result = request('cmdb.category', {'objID': self.id, 'category': category_const})
@@ -450,7 +450,7 @@ class CMDBObject(dict):
 
     def _fill_category_data(self,category_const,result,category_object = None):
         if category_const not in self.fields:
-            raise Exception('Object has no category %s in his type %s' % (category_const, self.type_object.type_const))
+            raise Exception('Object has no category %s in his type %s' % (category_const, self.type_object.const))
         if not category_object:
           category_object = get_category(category_const)
 
