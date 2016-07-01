@@ -168,7 +168,8 @@ class CMDBCategory(dict):
 
         result = request('cmdb.category_info', parameter)
 
-        self.fields = result
+        if type(result) is dict:
+            self.fields = result
 
         cmdbCategoryCache[self.const] = self
 
