@@ -270,6 +270,22 @@ def get_cmdb_type(type_id):
         return CMDBType(type_id)
 
 
+def get_type_id_from_const(type_const):
+    """
+    Returns the type constant for an given type id.
+    """
+    cmdb_type = get_cmdb_type(type_const)
+    return cmdb_type.get_id()
+
+
+def get_type_const_from_id(type_id):
+    """
+    Returns the type id for an given type const.
+    """
+    cmdb_type = get_cmdb_type(type_id)
+    return cmdb_type.get_const
+
+
 class CMDBType(dict):
 
     class CMDBTypeCategoryInclusion:
