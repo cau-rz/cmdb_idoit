@@ -2,6 +2,8 @@ import requests
 import json
 import base64
 import logging
+import configparser
+import os
 
 headers = {'content-type': 'application/json'}
 
@@ -17,6 +19,20 @@ def init_session(cmdb_url, cmdb_apikey, cmdb_username, cmdb_password):
     username = cmdb_username
     password = cmdb_password
     apikey = cmdb_apikey
+
+    session.auth = requests.auth.HTTPBasicAuth(username, password)
+    session.verify = False
+    session.headers.update(headers)
+
+
+def init_session_from_config():
+    global url, username, password, apikey, session
+    config = configparser.ConfigParser()
+    config.read(['cmdbrc', os.path.expanduser('~/.cmdbrc')],encoding='utf8')
+    url = config['main'].get('url')
+    username = config['main'].get('username')
+    password = config['main'].get('password')
+    apikey = config['main'].get('apikey')
 
     session.auth = requests.auth.HTTPBasicAuth(username, password)
     session.verify = False
