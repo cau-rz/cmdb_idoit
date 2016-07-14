@@ -10,16 +10,18 @@ session = requests.Session()
 url = None
 apikey = None
 
-def init_session(cmdb_url,cmdb_apikey,cmdb_username,cmdb_password):
-   global url, username, password, apikey, session 
-   url = cmdb_url
-   username = cmdb_username
-   password = cmdb_password
-   apikey = cmdb_apikey
-   
-   session.auth = requests.auth.HTTPBasicAuth(username, password)
-   session.verify = False
-   session.headers.update(headers)
+
+def init_session(cmdb_url, cmdb_apikey, cmdb_username, cmdb_password):
+    global url, username, password, apikey, session
+    url = cmdb_url
+    username = cmdb_username
+    password = cmdb_password
+    apikey = cmdb_apikey
+
+    session.auth = requests.auth.HTTPBasicAuth(username, password)
+    session.verify = False
+    session.headers.update(headers)
+
 
 def request(method, parameters):
     global url
@@ -57,6 +59,7 @@ def request(method, parameters):
     logging.debug('result:' + json.dumps(res_json['result'], sort_keys=True, indent=4))
     return res_json['result']
 
+
 def _requests(method, parameters):
     global url
     """
@@ -67,7 +70,7 @@ def _requests(method, parameters):
         raise TypeError('parameters not of type dict, but instead ', type(parameters))
 
     payload = list()
-    for key,parameter in parameters.items():
+    for key, parameter in parameters.items():
         if not type(parameter) is dict:
             raise TypeError('entry of parameters not of type dict, but instead ', type(parameter))
         parameter['apikey'] = apikey
@@ -99,6 +102,7 @@ def _requests(method, parameters):
 
     logging.debug('result:' + json.dumps(result, sort_keys=True, indent=4))
     return result
+
 
 class CMDBCategoryCache(dict):
     """
@@ -203,14 +207,14 @@ class CMDBCategoryValues(dict):
     def __setitem__(self, index, value):
         if self.category.hasfield(index):
             if index in self:
-                self._field_up2date_state[index] = self[index] == value 
+                self._field_up2date_state[index] = self[index] == value
             else:
                 self._field_up2date_state[index] = False
             dict.__setitem__(self, index, value)
         else:
             raise KeyError("Category " + self.category.const + " has no field " + index)
 
-    def mark_updated(self,state = True):
+    def mark_updated(self, state=True):
         """
         Marks all fields of this category instance as up to date.
         Hence when saved only manipulated and mandatory fields have to be commited
@@ -227,6 +231,7 @@ class CMDBCategoryValues(dict):
         for field in self.category.getFields():
             state = state and self._field_up2date_state[field]
         return not state
+
 
 class CMDBTypeCache(dict):
 
@@ -253,6 +258,7 @@ class CMDBTypeCache(dict):
             return dict.__contains__(self, self.const_to_type[key])
         else:
             return dict.__contains__(self, key)
+
 
 cmdbTypeCache = CMDBTypeCache()
 
@@ -366,32 +372,32 @@ class CMDBObjects(list):
     """
     A list of objects.
 
-    By default no filters are applied resulting this to be the list of all object in the cmdb. 
+    By default no filters are applied resulting this to be the list of all object in the cmdb.
     """
     filters = dict()
 
-    def __init__(self,filters = dict()):
+    def __init__(self, filters=dict()):
         self.filters = filters
 
-        result = request('cmdb.objects', {'filter': self.filters })
+        result = request('cmdb.objects', {'filter': self.filters})
         for raw_object in result:
             cmdb_object = CMDBObject(raw_object['type'])
             cmdb_object.fill(raw_object)
             self.append(cmdb_object)
 
-    def find_object_by_id(self,id):
+    def find_object_by_id(self, id):
         for obj in self:
             if obj.id == id:
                 return obj
         return None
 
-    def find_object_by_field(self,cat,key,value):
+    def find_object_by_field(self, cat, key, value):
         for obj in self:
             if obj[cat][key] == value:
                 return obj
         return None
 
-    def load_category_data(self,category_const):
+    def load_category_data(self, category_const):
         parameters = dict()
         for obj in self:
             parameters[obj.id] = {'objID': obj.id, 'category': category_const}
@@ -399,7 +405,7 @@ class CMDBObjects(list):
 
         for obj in self:
             if obj.id in result:
-               obj._fill_category_data(category_const,result[obj.id])
+                obj._fill_category_data(category_const, result[obj.id])
 
 
 class CMDBObject(dict):
@@ -446,13 +452,13 @@ class CMDBObject(dict):
         category_object = get_category(category_const)
 
         result = request('cmdb.category', {'objID': self.id, 'category': category_const})
-        self._fill_category_data(category_const,result,category_object)
+        self._fill_category_data(category_const, result, category_object)
 
-    def _fill_category_data(self,category_const,result,category_object = None):
+    def _fill_category_data(self, category_const, result, category_object=None):
         if category_const not in self.fields:
             raise Exception('Object has no category %s in his type %s' % (category_const, self.type_object.const))
         if not category_object:
-          category_object = get_category(category_const)
+            category_object = get_category(category_const)
 
         multi_value = get_cmdb_type(self.type).get_category_inclusion(category_const).multi_value
 
@@ -477,7 +483,7 @@ class CMDBObject(dict):
                             if len(field_value) == 0:
                                 field_value = None
                             else:
-                                field_value = [ val['id'] for val in field_value ]
+                                field_value = [val['id'] for val in field_value]
                     self.fields[category_const][key] = field_value
 
         self.fields[category_const].mark_updated()
@@ -517,8 +523,8 @@ class CMDBObject(dict):
         parameter['title'] = self.title
 
         if not self.is_up2date:
-          result = request(method, parameter)
-          self.is_up2date = True
+            result = request(method, parameter)
+            self.is_up2date = True
 
         if is_create:
             self.id = result['id']
@@ -532,7 +538,6 @@ class CMDBObject(dict):
             object_type = get_cmdb_type(self.type)
 
             multi_value = object_type.get_category_inclusion(category_const).multi_value
-            #print(category_const, multi_value, self._is_category_data_fetched(category_const))
 
             # Skip this category iff we are not creating and field is not fetched
             if not is_create and not self._is_category_data_fetched(category_const):
@@ -550,12 +555,12 @@ class CMDBObject(dict):
                         request(method, parameter)
                         field.mark_updated()
                     else:
-                        logging.debug("Category %s/%s of Object %s has no updates skipping" % (category_const,field.id,self.id))
+                        logging.debug("Category %s/%s of Object %s has no updates skipping" % (category_const, field.id, self.id))
             elif self.fields[category_const].has_updates():
                 parameter['data'] = dict()
                 parameter['data']['id'] = self.fields[category_const].id
-                for key,value in self.fields[category_const].items():
-                    logging.debug("%s[%s](%s)=%s" %(category_const,key,category.getfieldtype(key),str(value)))
+                for key, value in self.fields[category_const].items():
+                    logging.debug("%s[%s](%s)=%s" % (category_const, key, category.getfieldtype(key), str(value)))
                     parameter['data'][key] = value
                 if parameter['data']['id']:
                     method = "cmdb.category.update"
@@ -564,5 +569,4 @@ class CMDBObject(dict):
                 request(method, parameter)
                 self.fields[category_const].mark_updated()
             else:
-                logging.debug("Category %s of Object %s has no updates skipping" % (category_const,self.id))
-                
+                logging.debug("Category %s of Object %s has no updates skipping" % (category_const, self.id))
