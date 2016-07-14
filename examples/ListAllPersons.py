@@ -7,8 +7,13 @@ username = 'exampleuser'
 password = 'examplepassword'
 apikey = 'exampleapikey'
 
+
 # Initialise CMDB session
 cmdb.init_session(url,apikey,username,password)
+
+# Alternatively we could use
+# > cmdb.init_session_from_config()
+# to load configuration from file.
 
 # We want some informations
 logging.basicConfig(level=logging.INFO)
