@@ -3,6 +3,15 @@ cmdb-idoit
 
 An abstraction around the json-rpc interface of i-doit.
 
+Installation
+------------
+
+:: 
+
+  # git clone https://rzgit.rz.uni-kiel.de/szrzs197/cmdb-idoit.git
+  # python3 setup.py install --user
+  # export PATH=${PATH}:~/.local/bin/
+
 
 Configuration
 -------------
