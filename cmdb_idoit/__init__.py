@@ -518,7 +518,8 @@ class CMDBObject(dict):
                                 field_value = [val['id'] for val in field_value]
                     self.fields[category_const][key] = field_value
 
-        self.fields[category_const].mark_updated()
+            self.fields[category_const].mark_updated()
+
         self.is_up2date = True
         self.field_data_fetched[category_const] = True
 
