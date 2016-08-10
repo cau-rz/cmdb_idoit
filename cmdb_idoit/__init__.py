@@ -433,7 +433,6 @@ class CMDBObjects(list):
             multi_value = get_cmdb_type(cmdb_object.type).get_category_inclusion(category_const).multi_value
             if multi_value:
                 for entry in cmdb_object[category_const]:
-                    print(entry[key])
                     if entry[key] == value:
                         return cmdb_object
             else:
