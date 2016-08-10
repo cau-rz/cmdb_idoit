@@ -524,6 +524,10 @@ class CMDBObject(dict):
                     field_value = None
                 else:
                     field_value = [val['id'] for val in field_value]
+        elif field_type == 'text':
+            if type(field_value) is dict:
+                field_value = field_value['ref_title']
+
         return field_value
 
     def getTypeCategories(self):
