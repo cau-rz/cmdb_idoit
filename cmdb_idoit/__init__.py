@@ -25,14 +25,14 @@ def init_session(cmdb_url, cmdb_apikey, cmdb_username, cmdb_password):
     session.headers.update(headers)
 
 
-def init_session_from_config():
+def init_session_from_config(instance='main'):
     global url, username, password, apikey, session
     config = configparser.ConfigParser()
     config.read(['cmdbrc', os.path.expanduser('~/.cmdbrc')],encoding='utf8')
-    url = config['main'].get('url')
-    username = config['main'].get('username')
-    password = config['main'].get('password')
-    apikey = config['main'].get('apikey')
+    url = config[instance].get('url')
+    username = config[instance].get('username')
+    password = config[instance].get('password')
+    apikey = config[instance].get('apikey')
 
     session.auth = requests.auth.HTTPBasicAuth(username, password)
     session.verify = False

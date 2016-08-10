@@ -26,3 +26,11 @@ be available either at ``~/.cmdbrc`` or ``./cmdbrc``. Following the example:
   username=johndoe
   password=cleartextpw
   apikey=mycmdbapikey
+
+  [test]                                                                          
+  url=https://cmdb-test.example.com/src/jsonrpc.php                                 
+  username=johndoe
+  password=cleartextpw
+  apikey=mycmdbapikey
+
+You can selecte the instance by passing the name as argument to `init_session_from_config`.
