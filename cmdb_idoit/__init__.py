@@ -423,10 +423,22 @@ class CMDBObjects(list):
                 return obj
         return None
 
-    def find_object_by_field(self, cat, key, value):
-        for obj in self:
-            if obj[cat][key] == value:
-                return obj
+    def find_object_by_field(self, category_const, key, value):
+        """ 
+        Find an object by category field. This function will not always work
+        for multi_value categories.
+        """
+
+        for cmdb_object in self:
+            multi_value = get_cmdb_type(cmdb_object.type).get_category_inclusion(category_const).multi_value
+            if multi_value:
+                for entry in cmdb_object[category_const]:
+                    print(entry[key])
+                    if entry[key] == value:
+                        return cmdb_object
+            else:
+                if cmdb_object[category_const][key] == value:
+                   return cmdb_object
         return None
 
     def load_category_data(self, category_const):
