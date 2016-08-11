@@ -208,6 +208,44 @@ class CMDBCategory(dict):
     def getfieldtype(self, index):
         return self.fields[index]['data']['type']
 
+class CMDBCategoryValuesList(list):
+    """
+    A model of a multi value category of an object.
+    """
+    def __init__(self,category):
+        self.category = category
+        self._field_up2date_state = dict()
+        self.mark_updated(False)
+
+    def __setitem__(self,index,value):
+        cat_value = self._dict_to_catval(value)
+        list.__setitem__(self,index,cat_value)
+
+    def append(self,value):
+        cat_value = self._dict_to_catval(value)
+        list.append(self,cat_value)
+
+    def _dict_to_catval(self,value):
+        if isinstance(value,CMDBCategoryValues):
+            return value
+        elif isinstance(value,dict):
+            cat_value = CMDBCategoryValues(self.category)
+
+            for k,v in value.items():
+                cat_value[k] = v    
+
+            return cat_value
+        else:
+            raise TypeError("CMDBCategoryValuesList works only with dict or CMDBCategoryValues, but not with %s" % type(value))
+
+    def mark_updated(self, state=True):
+        pass
+
+    def has_updates(self):
+        state=False
+        for value in self:
+            state = state or value.has_updates()
+        return state
 
 class CMDBCategoryValues(dict):
     """
@@ -388,12 +426,15 @@ class CMDBType(dict):
         return list(self.global_categories.keys()) + list(self.special_categories.keys())
 
     def getObjectStructure(self):
-
+        """
+        Initialize the structure of a type. So every category is prepared as a CMDBCategoryValues
+        Object, except for those multie value categories.
+        """
         values = dict()
 
         for category_object in list(self.global_categories.values()) + list(self.special_categories.values()):
             if category_object.multi_value:
-                values[category_object.category.get_const()] = list()
+                values[category_object.category.get_const()] = CMDBCategoryValuesList(category_object.category)
             else:
                 values[category_object.category.get_const()] = CMDBCategoryValues(category_object.category)
 
@@ -463,7 +504,8 @@ class CMDBObject(dict):
         self.type = type_id
         self.is_up2date = False
 
-        self.fields = dict()
+        # Fields contains the structure of the object rebuild with CMDBCategoryValues and CMDBCategoryValuesList Objects
+        self.fields = None
         self.field_data_fetched = dict()
 
         self.__fetchtype__()
@@ -506,16 +548,14 @@ class CMDBObject(dict):
         multi_value = get_cmdb_type(self.type).get_category_inclusion(category_const).multi_value
 
         if multi_value:
-            value_list = list()
             for fields in result:
                 entry = CMDBCategoryValues(category_object)
                 entry.id = fields['id']
                 for key in category_object.getFields():
                     field_value = self._find_field_value(category_object, key, fields[key])
                     entry[key] = field_value
-                value_list.append(entry)
                 entry.mark_updated()
-            self.fields[category_const] = value_list
+                self.fields[category_const].append(entry)
         else:
             for fields in result:
                 self.fields[category_const].id = fields['id']
