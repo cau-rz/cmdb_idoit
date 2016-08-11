@@ -28,7 +28,7 @@ def init_session(cmdb_url, cmdb_apikey, cmdb_username, cmdb_password):
 def init_session_from_config(instance='main'):
     global url, username, password, apikey, session
     config = configparser.ConfigParser()
-    config.read(['cmdbrc', os.path.expanduser('~/.cmdbrc')],encoding='utf8')
+    config.read(['cmdbrc', os.path.expanduser('~/.cmdbrc')], encoding='utf8')
     url = config[instance].get('url')
     username = config[instance].get('username')
     password = config[instance].get('password')
@@ -208,31 +208,33 @@ class CMDBCategory(dict):
     def getfieldtype(self, index):
         return self.fields[index]['data']['type']
 
+
 class CMDBCategoryValuesList(list):
     """
     A model of a multi value category of an object.
     """
-    def __init__(self,category):
+
+    def __init__(self, category):
         self.category = category
         self._field_up2date_state = dict()
         self.mark_updated(False)
 
-    def __setitem__(self,index,value):
+    def __setitem__(self, index, value):
         cat_value = self._dict_to_catval(value)
-        list.__setitem__(self,index,cat_value)
+        list.__setitem__(self, index, cat_value)
 
-    def append(self,value):
+    def append(self, value):
         cat_value = self._dict_to_catval(value)
-        list.append(self,cat_value)
+        list.append(self, cat_value)
 
-    def _dict_to_catval(self,value):
-        if isinstance(value,CMDBCategoryValues):
+    def _dict_to_catval(self, value):
+        if isinstance(value, CMDBCategoryValues):
             return value
-        elif isinstance(value,dict):
+        elif isinstance(value, dict):
             cat_value = CMDBCategoryValues(self.category)
 
-            for k,v in value.items():
-                cat_value[k] = v    
+            for k, v in value.items():
+                cat_value[k] = v
 
             return cat_value
         else:
@@ -242,10 +244,11 @@ class CMDBCategoryValuesList(list):
         pass
 
     def has_updates(self):
-        state=False
+        state = False
         for value in self:
             state = state or value.has_updates()
         return state
+
 
 class CMDBCategoryValues(dict):
     """
@@ -465,7 +468,7 @@ class CMDBObjects(list):
         return None
 
     def find_object_by_field(self, category_const, key, value):
-        """ 
+        """
         Find an object by category field. This function will not always work
         for multi_value categories.
         """
@@ -478,7 +481,7 @@ class CMDBObjects(list):
                         return cmdb_object
             else:
                 if cmdb_object[category_const][key] == value:
-                   return cmdb_object
+                    return cmdb_object
         return None
 
     def load_category_data(self, category_const):
