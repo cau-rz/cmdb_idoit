@@ -271,6 +271,32 @@ class CMDBCategoryValues(dict):
         else:
             raise KeyError("Category " + self.category.const + " has no field " + index)
 
+    def __getitem__(self,index):
+        field_type = self.category.getfieldtype(index)
+        field_value = dict.__getitem__(self,index)
+        if not field_value:
+            return None
+        if field_type == 'int':
+            if type(field_value) is list:
+                if len(field_value) == 0:
+                    field_value = None
+                else:
+                    field_value = [val['id'] for val in field_value]
+            elif 'value' in field_value:
+                field_value = field_value['value']
+        elif field_type == 'text':
+            if type(field_value) is dict:
+                field_value = field_value['ref_title']
+        return field_value
+
+    def items(self):
+        keys = dict.keys(self)
+        return [ (key, self[key]) for key in keys ]
+
+    def values(self):
+        keys = dict.keys(self)
+        return [ self[key] for key in keys ]
+
     def mark_updated(self, state=True):
         """
         Marks all fields of this category instance as up to date.
@@ -555,34 +581,18 @@ class CMDBObject(dict):
                 entry = CMDBCategoryValues(category_object)
                 entry.id = fields['id']
                 for key in category_object.getFields():
-                    field_value = self._find_field_value(category_object, key, fields[key])
-                    entry[key] = field_value
+                    entry[key] = fields[key]
                 entry.mark_updated()
                 self.fields[category_const].append(entry)
         else:
             for fields in result:
                 self.fields[category_const].id = fields['id']
                 for key in category_object.getFields():
-                    field_value = self._find_field_value(category_object, key, fields[key])
-                    self.fields[category_const][key] = field_value
+                    self.fields[category_const][key] = fields[key]
             self.fields[category_const].mark_updated()
 
         self.is_up2date = True
         self.field_data_fetched[category_const] = True
-
-    def _find_field_value(self, category_object, key, field_value):
-        field_type = category_object.getfieldtype(key)
-        if field_type == 'int':
-            if type(field_value) is list:
-                if len(field_value) == 0:
-                    field_value = None
-                else:
-                    field_value = [val['id'] for val in field_value]
-        elif field_type == 'text':
-            if type(field_value) is dict:
-                field_value = field_value['ref_title']
-
-        return field_value
 
     def getTypeCategories(self):
         return self.type_object.getCategories()
