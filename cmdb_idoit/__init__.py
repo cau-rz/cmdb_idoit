@@ -223,6 +223,11 @@ class CMDBCategoryValuesList(list):
         cat_value = self._dict_to_catval(value)
         list.__setitem__(self, index, cat_value)
 
+    def __delitem__(self,index):
+        print(index)
+        item = list.__getitem__(self,index)
+        item._deleted = True
+
     def append(self, value):
         cat_value = self._dict_to_catval(value)
         list.append(self, cat_value)
@@ -255,6 +260,7 @@ class CMDBCategoryValues(dict):
     A model of category data of an object.
     """
     id = None
+    _deleted = False
 
     def __init__(self, category):
         self.category = category
@@ -314,6 +320,9 @@ class CMDBCategoryValues(dict):
         for field in self.category.getFields():
             state = state and self._field_up2date_state[field]
         return not state
+
+    def has_been_deleted(self):
+        return self._deleted
 
 
 class CMDBTypeCache(dict):
@@ -658,6 +667,12 @@ class CMDBObject(dict):
                             method = "cmdb.category.create"
                         request(method, parameter)
                         field.mark_updated()
+                    elif field.has_been_deleted():
+                        if field.id:
+                            method = "cmdb.category.delete"
+                            parameter['id'] = field.id
+                            request(method, parameter)
+                            # TODO Now we need to really remove the value from the list
                     else:
                         logging.debug("Category %s/%s of Object %s has no updates skipping" % (category_const, field.id, self.id))
             elif self.fields[category_const].has_updates():
