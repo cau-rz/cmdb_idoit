@@ -214,6 +214,8 @@ class CMDBCategoryValuesList(list):
     A model of a multi value category of an object.
     """
 
+    deleted_items = list()
+
     def __init__(self, category):
         self.category = category
         self._field_up2date_state = dict()
@@ -224,9 +226,14 @@ class CMDBCategoryValuesList(list):
         list.__setitem__(self, index, cat_value)
 
     def __delitem__(self,index):
-        print(index)
-        item = list.__getitem__(self,index)
-        item._deleted = True
+        if isinstance(index,slice):
+            for x in sorted(range(0,len(self))[index],reverse=True):
+                del self[x]
+        else:
+            item = list.__getitem__(self,index)
+            if isinstance(item,CMDBCategoryValues) and item.id:
+                self.deleted_items.append(item)
+            list.__delitem__(self,index)
 
     def append(self, value):
         cat_value = self._dict_to_catval(value)
@@ -260,7 +267,6 @@ class CMDBCategoryValues(dict):
     A model of category data of an object.
     """
     id = None
-    _deleted = False
 
     def __init__(self, category):
         self.category = category
@@ -320,9 +326,6 @@ class CMDBCategoryValues(dict):
         for field in self.category.getFields():
             state = state and self._field_up2date_state[field]
         return not state
-
-    def has_been_deleted(self):
-        return self._deleted
 
 
 class CMDBTypeCache(dict):
@@ -623,6 +626,15 @@ class CMDBObject(dict):
             self._fetch_category_data(key)
         return self.fields[key]
 
+    def __delitem__(self,category_const):
+        multi_value = get_cmdb_type(self.type).get_category_inclusion(category_const).multi_value
+        if multi_value:
+            for i in range(1,len(self.fields[category_const])):
+                print('.')
+                del self.fields[category_const]
+        else:
+            pass
+
     def save(self):
 
         is_create = self.id is None
@@ -667,14 +679,13 @@ class CMDBObject(dict):
                             method = "cmdb.category.create"
                         request(method, parameter)
                         field.mark_updated()
-                    elif field.has_been_deleted():
-                        if field.id:
-                            method = "cmdb.category.delete"
-                            parameter['id'] = field.id
-                            request(method, parameter)
-                            # TODO Now we need to really remove the value from the list
                     else:
                         logging.debug("Category %s/%s of Object %s has no updates skipping" % (category_const, field.id, self.id))
+                for field in  self.fields[category_const].deleted_items:
+                    if field.id:
+                        method = "cmdb.category.delete"
+                        parameter['id'] = field.id
+                        request(method, parameter)
             elif self.fields[category_const].has_updates():
                 parameter['data'] = dict()
                 parameter['data']['id'] = self.fields[category_const].id
