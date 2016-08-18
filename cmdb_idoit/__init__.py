@@ -65,7 +65,10 @@ def request(method, parameters):
     if 'content-type' in response.headers:
         if not response.headers['content-type'] == 'application/json':
             raise Exception("Response has unexpected content-type: %s" % response.headers['content-type'])
-    res_json = response.json()
+    try:
+        res_json = response.json()
+    except ValueError:
+        return None
 
     # Raise Exception when an error accures
     if 'error' in res_json:
@@ -205,6 +208,9 @@ class CMDBCategory(dict):
     def getFields(self):
         return self.fields.keys()
 
+    def getfield(self, index):
+        return self.fields[index]['data']['field']
+
     def getfieldtype(self, index):
         return self.fields[index]['data']['type']
 
@@ -273,12 +279,37 @@ class CMDBCategoryValues(dict):
         self._field_up2date_state = dict()
         self.mark_updated(False)
 
+    def _fill_category_data(self, fields):
+        self.id = fields['id']
+        for key in self.category.getFields():
+            dict.__setitem__(self, key, fields[key])
+
     def __setitem__(self, index, value):
         if self.category.hasfield(index):
+            # Get type,value of field
+            field_type = self.category.getfieldtype(index)
+            field_value = None
             if index in self:
                 self._field_up2date_state[index] = self[index] == value
+                field_value = dict.__getitem__(self,index)
             else:
                 self._field_up2date_state[index] = False
+            # rough field Type/handling detection 
+            if field_type == 'int':
+                if type(field_value) is list:
+                    # TODO We need to encapsulate values in an extra type ....
+                    #      to get a better guess 
+                    pass
+                else:
+                    if not isinstance(field_value,dict):
+                        field_value = dict()
+                    field_value['value'] = value
+                    value = field_value
+            elif field_type == 'text':
+                if not isinstance(field_value,dict):
+                    field_value = dict()
+                field_value['ref_title'] = value
+                value = field_value
             dict.__setitem__(self, index, value)
         else:
             raise KeyError("Category " + self.category.const + " has no field " + index)
@@ -309,6 +340,10 @@ class CMDBCategoryValues(dict):
         keys = dict.keys(self)
         return [ self[key] for key in keys ]
 
+    def update(self,other_dict):
+        for key, val in other_dict.items():
+            self[key] = val
+
     def mark_updated(self, state=True):
         """
         Marks all fields of this category instance as up to date.
@@ -320,6 +355,9 @@ class CMDBCategoryValues(dict):
         """
         for field in self.category.getFields():
             self._field_up2date_state[field] = state
+
+    def has_value_been_updated(self, key):
+        return not self._field_up2date_state[key]
 
     def has_updates(self):
         state = True
@@ -591,16 +629,12 @@ class CMDBObject(dict):
         if multi_value:
             for fields in result:
                 entry = CMDBCategoryValues(category_object)
-                entry.id = fields['id']
-                for key in category_object.getFields():
-                    entry[key] = fields[key]
+                entry._fill_category_data(fields)
                 entry.mark_updated()
                 self.fields[category_const].append(entry)
         else:
             for fields in result:
-                self.fields[category_const].id = fields['id']
-                for key in category_object.getFields():
-                    self.fields[category_const][key] = fields[key]
+                self.fields[category_const]._fill_category_data(fields)
             self.fields[category_const].mark_updated()
 
         self.is_up2date = True
@@ -671,7 +705,11 @@ class CMDBObject(dict):
             if multi_value:
                 for field in self.fields[category_const]:
                     if field.has_updates():
-                        parameter['data'] = dict(field)
+                        parameter['data'] = dict()
+                        for key, value in field.items():
+                            logging.debug("%s[%s](%s)=%s" % (category_const, key, category.getfieldtype(key), str(value)))
+                            if field.has_value_been_updated(key):
+                                parameter['data'][key] = value
                         if field.id:
                             method = "cmdb.category.update"
                             parameter['data']['id'] = field.id
