@@ -1,4 +1,21 @@
 #!/usr/bin/env python3 
+"""
+    This file is part of cmdb_idoit.
+
+    cmdb_idoit is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    cmdb_idoit is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with cmdb_idoit.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
 import click
 import cmdb_idoit as cmdb
 import logging
@@ -8,7 +25,8 @@ import json
 cmdb.init_session_from_config()
 
 # We want some informations
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
+
 
 @click.group()
 def cli():
@@ -46,13 +64,33 @@ def show_type_declaration(type_const):
         struct[catconst] = catstruct
   print(json.dumps(struct, sort_keys=True, indent=4))
 
+
 @cli.group("category")
 def cli_cat():
     pass
 
+
 @cli_cat.command("list")
 def show_object_categories():
     pass
+
+
+@cli.group("object")
+def cli_obj():
+    pass
+
+
+@cli_obj.command("find")
+@click.option('-t','--type',help="Type of Object",required=True)
+@click.option('-c','--with-category',help="load values for category",multiple=True)
+def object_find(type,with_category=list()):
+    objects = cmdb.CMDBObjects(filters=dict(
+        { 'type': type }
+        ))
+    print(objects)
+    for category in with_category:
+        print(category)
+
 
 if __name__ == '__main__':
     cli()

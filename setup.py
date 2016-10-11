@@ -1,9 +1,3 @@
-"""Python3 JSON-RPC abstraction for i-doit.
-
-See:
-http://www.i-doit.org/
-"""
-
 # Always prefer setuptools over distutils
 from setuptools import setup, find_packages
 # To use a consistent encoding
