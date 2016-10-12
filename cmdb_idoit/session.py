@@ -21,12 +21,14 @@ import os
 import logging
 import json
 
+
 url = None
 apikey = None
 
 headers = {'content-type': 'application/json'}
 
 session = requests.Session()
+
 
 def init_session(cmdb_url, cmdb_apikey, cmdb_username, cmdb_password):
     global url, username, password, apikey, session
@@ -52,6 +54,7 @@ def init_session_from_config(instance='main'):
     session.auth = requests.auth.HTTPBasicAuth(username, password)
     session.verify = False
     session.headers.update(headers)
+
 
 def request(method, parameters):
     global url

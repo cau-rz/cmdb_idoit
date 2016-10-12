@@ -18,6 +18,7 @@
 from .session import *
 from .category import *
 
+
 class CMDBTypeCache(dict):
 
     def __init__(self):
@@ -170,6 +171,3 @@ class CMDBType(dict):
                 values[category_object.category.get_const()] = CMDBCategoryValues(category_object.category)
 
         return values
-
-
-

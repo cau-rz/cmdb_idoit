@@ -17,6 +17,7 @@
 
 from .session import *
 
+
 class CMDBCategoryCache(dict):
     """
     A special `dict` for caching `CMDBCategory`'s.
@@ -69,9 +70,9 @@ def get_category(category_const, category_id=None, category_global=False):
 class CMDBCategory(dict):
     """
     A model representing a CMDB category.
-    
+
     Each category is a set of fields, which have a data representation
-    and a information type. 
+    and a information type.
     """
 
     def __init__(self, category_id, category_const, global_category):
@@ -109,7 +110,7 @@ class CMDBCategory(dict):
         return self.fields[index]['data']['field']
 
     def get_field_data_type(self, index):
-        """ 
+        """
         Return the data type of a field.
         """
         return self.fields[index]['data']['type']
@@ -137,15 +138,15 @@ class CMDBCategoryValuesList(list):
         cat_value = self._dict_to_catval(value)
         list.__setitem__(self, index, cat_value)
 
-    def __delitem__(self,index):
-        if isinstance(index,slice):
-            for x in sorted(range(0,len(self))[index],reverse=True):
+    def __delitem__(self, index):
+        if isinstance(index, slice):
+            for x in sorted(range(0, len(self))[index], reverse=True):
                 del self[x]
         else:
-            item = list.__getitem__(self,index)
-            if isinstance(item,CMDBCategoryValues) and item.id:
+            item = list.__getitem__(self, index)
+            if isinstance(item, CMDBCategoryValues) and item.id:
                 self.deleted_items.append(item)
-            list.__delitem__(self,index)
+            list.__delitem__(self, index)
 
     def append(self, value):
         cat_value = self._dict_to_catval(value)
@@ -192,27 +193,27 @@ class CMDBCategoryValues(dict):
 
     def __setitem__(self, index, value):
         if self.category.hasfield(index):
-            # Get type,value of field
+            # Get type, value of field
             field_type = self.category.get_field_data_type(index)
             field_value = None
             if index in self:
                 self._field_up2date_state[index] = self[index] == value
-                field_value = dict.__getitem__(self,index)
+                field_value = dict.__getitem__(self, index)
             else:
                 self._field_up2date_state[index] = False
-            # rough field Type/handling detection 
+            # rough field Type/handling detection
             if field_type == 'int':
                 if type(field_value) is list:
                     # TODO We need to encapsulate values in an extra type ....
-                    #      to get a better guess 
+                    #      to get a better guess
                     pass
                 else:
-                    if not isinstance(field_value,dict):
+                    if not isinstance(field_value, dict):
                         field_value = dict()
                     field_value['value'] = value
                     value = field_value
             elif field_type == 'text':
-                if not isinstance(field_value,dict):
+                if not isinstance(field_value, dict):
                     field_value = dict()
                 field_value['ref_title'] = value
                 value = field_value
@@ -220,9 +221,9 @@ class CMDBCategoryValues(dict):
         else:
             raise KeyError("Category " + self.category.const + " has no field " + index)
 
-    def __getitem__(self,index):
+    def __getitem__(self, index):
         field_type = self.category.get_field_data_type(index)
-        field_value = dict.__getitem__(self,index)
+        field_value = dict.__getitem__(self, index)
         if not field_value:
             return None
         if field_type == 'int':
@@ -240,13 +241,13 @@ class CMDBCategoryValues(dict):
 
     def items(self):
         keys = dict.keys(self)
-        return [ (key, self[key]) for key in keys ]
+        return [(key, self[key]) for key in keys]
 
     def values(self):
         keys = dict.keys(self)
-        return [ self[key] for key in keys ]
+        return [self[key] for key in keys]
 
-    def update(self,other_dict):
+    def update(self, other_dict):
         for key, val in other_dict.items():
             self[key] = val
 
@@ -270,6 +271,3 @@ class CMDBCategoryValues(dict):
         for field in self.category.getFields():
             state = state and self._field_up2date_state[field]
         return not state
-
-
-

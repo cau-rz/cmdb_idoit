@@ -19,6 +19,7 @@ from .session import *
 from .category import *
 from .type import *
 
+
 class CMDBObjects(list):
     """
     A list of objects.
@@ -159,10 +160,10 @@ class CMDBObject(dict):
             self._fetch_category_data(key)
         return self.fields[key]
 
-    def __delitem__(self,category_const):
+    def __delitem__(self, category_const):
         multi_value = get_cmdb_type(self.type).get_category_inclusion(category_const).multi_value
         if multi_value:
-            for i in range(1,len(self.fields[category_const])):
+            for i in range(1, len(self.fields[category_const])):
                 del self.fields[category_const]
         else:
             raise NotImplementedError()
@@ -217,7 +218,7 @@ class CMDBObject(dict):
                         field.mark_updated()
                     else:
                         logging.debug("Category %s/%s of Object %s has no updates skipping" % (category_const, field.id, self.id))
-                for field in  self.fields[category_const].deleted_items:
+                for field in self.fields[category_const].deleted_items:
                     if field.id:
                         method = "cmdb.category.delete"
                         parameter['id'] = field.id
@@ -235,7 +236,4 @@ class CMDBObject(dict):
                 request(method, parameter)
                 self.fields[category_const].mark_updated()
             else:
-               logging.debug("Category %s of Object %s has no updates skipping" % (category_const, self.id))
-
-
-
+                logging.debug("Category %s of Object %s has no updates skipping" % (category_const, self.id))
