@@ -1,3 +1,5 @@
 build/
+dist/
+cmdb_idoit.egg-info/
 *.pyc
 .*
