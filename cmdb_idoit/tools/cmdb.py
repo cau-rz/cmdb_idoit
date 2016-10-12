@@ -25,7 +25,7 @@ import json
 cmdb.init_session_from_config()
 
 # We want some informations
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARNING)
 
 
 @click.group()
@@ -56,7 +56,7 @@ def show_type_declaration(type_const):
     categorie = cmdb.get_category(catconst)
     catstruct = dict()
     for field in categorie.getFields():
-        catstruct[field] = categorie.getfieldtype(field)
+        catstruct[field] = "%s, %s" % (categorie.get_field_data_type(field),categorie.get_field_info_type(field))
     catinc = cmdb_type.get_category_inclusion(catconst)
     if catinc.multi_value:
         struct[catconst] = list([catstruct])
@@ -64,21 +64,26 @@ def show_type_declaration(type_const):
         struct[catconst] = catstruct
   print(json.dumps(struct, sort_keys=True, indent=4))
 
-
 @cli.group("category")
 def cli_cat():
     pass
-
 
 @cli_cat.command("list")
 def show_object_categories():
     pass
 
+@cli_cat.command("dialog")
+@click.argument("category_const")
+@click.argument("field_name")
+def show_category_field_dialog(category_const, field_name):
+    cmdb_dialog = cmdb.CMDBDialog(category_const,field_name)
+    print("Id\tConstant\t\tTitle")
+    for dialog in cmdb_dialog.values():
+        print("%s\t%s\t\t%s" % (dialog['id'], dialog['const'], dialog['title']))
 
 @cli.group("object")
 def cli_obj():
     pass
-
 
 @cli_obj.command("find")
 @click.option('-t','--type',help="Type of Object",required=True)
