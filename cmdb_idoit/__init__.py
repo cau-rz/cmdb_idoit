@@ -192,6 +192,9 @@ def get_category(category_const, category_id=None, category_global=False):
 class CMDBCategory(dict):
     """
     A model representing a CMDB category.
+    
+    Each category is a set of fields, which have a data representation
+    and a information type. 
     """
 
     def __init__(self, category_id, category_const, global_category):
@@ -228,8 +231,17 @@ class CMDBCategory(dict):
     def getfield(self, index):
         return self.fields[index]['data']['field']
 
-    def getfieldtype(self, index):
+    def get_field_data_type(self, index):
+        """ 
+        Return the data type of a field.
+        """
         return self.fields[index]['data']['type']
+
+    def get_field_info_type(self, index):
+        """
+        Return the information type of a field.
+        """
+        return self.fields[index]['info']['type']
 
 
 class CMDBCategoryValuesList(list):
@@ -304,7 +316,7 @@ class CMDBCategoryValues(dict):
     def __setitem__(self, index, value):
         if self.category.hasfield(index):
             # Get type,value of field
-            field_type = self.category.getfieldtype(index)
+            field_type = self.category.get_field_data_type(index)
             field_value = None
             if index in self:
                 self._field_up2date_state[index] = self[index] == value
@@ -332,7 +344,7 @@ class CMDBCategoryValues(dict):
             raise KeyError("Category " + self.category.const + " has no field " + index)
 
     def __getitem__(self,index):
-        field_type = self.category.getfieldtype(index)
+        field_type = self.category.get_field_data_type(index)
         field_value = dict.__getitem__(self,index)
         if not field_value:
             return None
@@ -723,7 +735,7 @@ class CMDBObject(dict):
                     if field.has_updates():
                         parameter['data'] = dict()
                         for key, value in field.items():
-                            logging.debug("%s[%s](%s)=%s" % (category_const, key, category.getfieldtype(key), str(value)))
+                            logging.debug("%s[%s](%s)=%s" % (category_const, key, category.get_field_data_type(key), str(value)))
                             if field.has_value_been_updated(key):
                                 parameter['data'][key] = value
                         if field.id:
@@ -744,7 +756,7 @@ class CMDBObject(dict):
                 parameter['data'] = dict()
                 parameter['data']['id'] = self.fields[category_const].id
                 for key, value in self.fields[category_const].items():
-                    logging.debug("%s[%s](%s)=%s" % (category_const, key, category.getfieldtype(key), str(value)))
+                    logging.debug("%s[%s](%s)=%s" % (category_const, key, category.get_field_data_type(key), str(value)))
                     parameter['data'][key] = value
                 if parameter['data']['id']:
                     method = "cmdb.category.update"
