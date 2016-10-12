@@ -765,4 +765,49 @@ class CMDBObject(dict):
                 request(method, parameter)
                 self.fields[category_const].mark_updated()
             else:
-                logging.debug("Category %s of Object %s has no updates skipping" % (category_const, self.id))
+               logging.debug("Category %s of Object %s has no updates skipping" % (category_const, self.id))
+
+
+def get_cmdb_dialog(category_const,field_name):
+    return CMDBType(category_const,field_name)
+
+
+class CMDBDialog:
+    """
+      Representation of a dialog value set.
+    """
+
+    def __init__(self,category_const,field_name):
+        self.category = category_const
+        self.field = field_name
+        self.dialog_from_const = dict()
+        self.dialog_from_id = dict()
+        self._load()
+
+    def _load(self):
+
+        result = request('cmdb.dialog.read',{ 'category': self.category, 'property': self.field })
+        
+        if len(result) == 0:
+            logging.warning("Can't fetch dialog entries for category %s and field %s" % (self.category,self.field))
+            raise Exception('No dialog informations')
+            return
+        else:
+           for entry in result:
+               self.dialog_from_const[entry['const']] = entry
+               self.dialog_from_id[entry['id']] = entry
+
+    def get_field_name(self):
+        return self.field_name
+
+    def get_category(self):
+        return self.category_const
+
+    def get_dialog_from_const(self,dialog_const):
+        return self.dialog_from_const[dialog_const]
+
+    def get_dialog_from_id(self,dialog_id):
+        return self.dialog_from_id[dialog_id]
+
+    def values(self):
+        return self.dialog_from_const.values()
