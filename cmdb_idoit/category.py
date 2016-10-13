@@ -59,7 +59,7 @@ def get_category(category_const, category_id=None, category_global=False):
 
     Should there be no cached `CMDBCategory` and category_id is not given then the result is None.
     """
-    if category_const in cmdbCategoryCache:
+    if is_categorie_cached(category_const):
         return cmdbCategoryCache[category_const]
     elif category_id:
         return CMDBCategory(category_id, category_const, category_global)
@@ -67,9 +67,14 @@ def get_category(category_const, category_id=None, category_global=False):
         return None
 
 
+def is_categorie_cached(category_const):
+    return category_const in cmdbCategoryCache
+
+
 def fetch_categories(categories):
     """
     Fetches a list of categories in one bulk request.
+    Returns a list of requested categories.
     """
     parameters = dict()
     for categorie in categories:
@@ -78,13 +83,20 @@ def fetch_categories(categories):
             parameter['catgID'] = categorie['id']
         else:
             parameter['catsID'] = categorie['id']
-        parameters[int(categorie['id'])] = parameter
+        if not is_categorie_cached(categorie['const']):
+            parameters[int(categorie['id'])] = parameter
 
-    results = multi_requests('cmdb.category_info', parameters)
+    if len(parameters) > 0:
+        results = multi_requests('cmdb.category_info', parameters)
+    else:
+        results = dict()
+
     fetched = list()
     for categorie in categories:
         if int(categorie['id']) in results:
             fetched.append(CMDBCategory(categorie['id'], categorie['const'], categorie['global'], results[int(categorie['id'])]))
+        elif is_categorie_cached(categorie['const']):
+            fetched.append(get_category(categorie['const']))
 
     return fetched
 
