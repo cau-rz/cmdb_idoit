@@ -116,6 +116,7 @@ def multi_requests(method, parameters):
             "params": parameter,
             "version": "2.0"})
 
+    logging.debug('request_payload:' + json.dumps(payload, sort_keys=True, indent=4))
     response = session.post(url, data=json.dumps(payload), verify=False, stream=False)
 
     # Validate response
