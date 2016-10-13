@@ -133,6 +133,12 @@ class CMDBType(dict):
         if 'cats' in result:
             categories += [(False, c) for c in result['cats']]
 
+        categories_parameter = list()
+        for glob, cat in categories:
+            categories_parameter.append({'id': cat['id'], 'const': cat['const'], 'global': glob})
+        logging.info("Fetch categories for type %s" % self.const)
+        fetch_categories(categories_parameter)
+
         for glob, cat in categories:
             logging.info("Loading category %s" % cat['const'])
             category_type_inclusion = self.CMDBTypeCategoryInclusion()

@@ -25,7 +25,7 @@ import json
 cmdb.init_session_from_config()
 
 # We want some informations
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.DEBUG)
 
 
 @click.group()
@@ -92,9 +92,9 @@ def object_find(type,with_category=list()):
     objects = cmdb.CMDBObjects(filters=dict(
         { 'type': type }
         ))
-    print(objects)
+    print(json.dumps(objects, sort_keys=True, indent=4))
     for category in with_category:
-        print(category)
+        print(json.dumps(category, sort_keys=True, indent=4))
 
 
 if __name__ == '__main__':

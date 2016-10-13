@@ -67,6 +67,28 @@ def get_category(category_const, category_id=None, category_global=False):
         return None
 
 
+def fetch_categories(categories):
+    """
+    Fetches a list of categories in one bulk request.
+    """
+    parameters = dict()
+    for categorie in categories:
+        parameter = dict()
+        if categorie['global']:
+            parameter['catgID'] = categorie['id']
+        else:
+            parameter['catsID'] = categorie['id']
+        parameters[int(categorie['id'])] = parameter
+
+    results = multi_requests('cmdb.category_info', parameters)
+    fetched = list()
+    for categorie in categories:
+        if int(categorie['id']) in results:
+            fetched.append(CMDBCategory(categorie['id'], categorie['const'], categorie['global'], results[int(categorie['id'])]))
+
+    return fetched
+
+
 class CMDBCategory(dict):
     """
     A model representing a CMDB category.
@@ -75,7 +97,7 @@ class CMDBCategory(dict):
     and a information type.
     """
 
-    def __init__(self, category_id, category_const, global_category):
+    def __init__(self, category_id, category_const, global_category, result=None):
         self.id = category_id
         self.const = category_const
         self.global_category = global_category
@@ -87,11 +109,13 @@ class CMDBCategory(dict):
         else:
             parameter['catsID'] = self.id
 
-        result = request('cmdb.category_info', parameter)
+        if result is None:
+            result = request('cmdb.category_info', parameter)
 
         if type(result) is dict:
             self.fields = result
 
+        logging.info('Caching category %s' % self.const)
         cmdbCategoryCache[self.const] = self
 
     def get_id(self):
