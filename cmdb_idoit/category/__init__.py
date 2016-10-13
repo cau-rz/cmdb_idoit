@@ -15,7 +15,7 @@
     along with cmdb_idoit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from .session import *
+from cmdb_idoit.session import *
 
 
 class CMDBCategoryCache(dict):
@@ -233,7 +233,8 @@ class CMDBCategoryValues(dict):
     def __setitem__(self, index, value):
         if self.category.hasfield(index):
             # Get type, value of field
-            field_type = self.category.get_field_data_type(index)
+            field_data_type = self.category.get_field_data_type(index)
+            field_info_type = self.category.get_field_info_type(index)
             field_value = None
             if index in self:
                 self._field_up2date_state[index] = self[index] == value
@@ -241,7 +242,7 @@ class CMDBCategoryValues(dict):
             else:
                 self._field_up2date_state[index] = False
             # rough field Type/handling detection
-            if field_type == 'int':
+            if field_data_type == 'int':
                 if type(field_value) is list:
                     # TODO We need to encapsulate values in an extra type ....
                     #      to get a better guess
@@ -250,8 +251,10 @@ class CMDBCategoryValues(dict):
                     if not isinstance(field_value, dict):
                         field_value = dict()
                     field_value['value'] = value
+                    if field_info_type == 'dialog':
+                        field_value = value 
                     value = field_value
-            elif field_type == 'text':
+            elif field_data_type == 'text':
                 if not isinstance(field_value, dict):
                     field_value = dict()
                 field_value['ref_title'] = value
@@ -261,19 +264,24 @@ class CMDBCategoryValues(dict):
             raise KeyError("Category " + self.category.const + " has no field " + index)
 
     def __getitem__(self, index):
-        field_type = self.category.get_field_data_type(index)
+        field_data_type = self.category.get_field_data_type(index)
+        field_info_type = self.category.get_field_info_type(index)
         field_value = dict.__getitem__(self, index)
         if not field_value:
             return None
-        if field_type == 'int':
+        if field_data_type == 'int':
             if type(field_value) is list:
+                print("List: %s" % index)
                 if len(field_value) == 0:
                     field_value = None
                 else:
                     field_value = [val['id'] for val in field_value]
             elif 'value' in field_value:
                 field_value = field_value['value']
-        elif field_type == 'text':
+            elif field_info_type == 'dialog':
+                if field_value is dict and 'id' in field_value:
+                    field_value = field_value['id']
+        elif field_data_type == 'text':
             if type(field_value) is dict:
                 field_value = field_value['ref_title']
         return field_value
