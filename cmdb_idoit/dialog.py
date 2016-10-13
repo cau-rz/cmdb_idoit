@@ -19,7 +19,7 @@ from .session import *
 
 
 def get_cmdb_dialog(category_const, field_name):
-    return CMDBType(category_const, field_name)
+    return CMDBDialog(category_const, field_name)
 
 
 class CMDBDialog:
