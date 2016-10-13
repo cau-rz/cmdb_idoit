@@ -149,7 +149,7 @@ class CMDBType(dict):
 
             category_object = get_category(category_const=cat['const'], category_id=cat['id'], category_global=glob)
             category_type_inclusion.category = category_object
-            if glob:
+            if category_object.is_global_category():
                 self.global_categories[category_object.get_const()] = category_type_inclusion
             else:
                 self.special_categories[category_object.get_const()] = category_type_inclusion

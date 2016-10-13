@@ -145,6 +145,9 @@ class CMDBCategory(dict):
         """
         return self.fields[index]['info']['type']
 
+    def is_global_category(self):
+        return self.global_category
+
 
 class CMDBCategoryValuesList(list):
     """
