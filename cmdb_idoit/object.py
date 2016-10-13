@@ -64,7 +64,7 @@ class CMDBObjects(list):
         parameters = dict()
         for obj in self:
             parameters[obj.id] = {'objID': obj.id, 'category': category_const}
-        result = _requests('cmdb.category', parameters)
+        result = multi_requests('cmdb.category', parameters)
 
         for obj in self:
             if obj.id in result:

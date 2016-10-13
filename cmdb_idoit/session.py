@@ -96,7 +96,7 @@ def request(method, parameters):
     return res_json['result']
 
 
-def _requests(method, parameters):
+def multi_requests(method, parameters):
     global url
     """
     Call a JSON RPC `method` with given `parameters`. Automagically handling authentication
