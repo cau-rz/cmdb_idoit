@@ -22,6 +22,11 @@ def get_cmdb_dialog(category_const, field_name):
     return CMDBDialog(category_const, field_name)
 
 
+def get_cmdb_dialog_id_from_const(category_const, field_name, dialog_const):
+    dialog_set = get_cmdb_dialog(category_const, field_name)
+    return dialog_set.get_cmdb_dialog_id_from_const(dialog_const)
+
+
 class CMDBDialog:
     """
       Representation of a dialog value set.
