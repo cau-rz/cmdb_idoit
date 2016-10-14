@@ -92,10 +92,11 @@ def object_find(type,with_category=list()):
     objects = cmdb.CMDBObjects(filters=dict(
         { 'type': type }
         ))
-    print(json.dumps(objects, sort_keys=True, indent=4))
     for category in with_category:
-        print(json.dumps(category, sort_keys=True, indent=4))
-
+        objects.load_category_data(category)
+    for object in objects:
+        for category in with_category:
+            print(json.dumps(object[category], sort_keys=True, indent=4))
 
 if __name__ == '__main__':
     cli()

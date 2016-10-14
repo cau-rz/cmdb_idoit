@@ -16,6 +16,7 @@
 """
 
 from cmdb_idoit.session import *
+from cmdb_idoit.category.value_factory import *
 
 
 class CMDBCategoryCache(dict):
@@ -127,8 +128,9 @@ class CMDBCategory(dict):
         if type(result) is dict:
             self.fields = result
 
-        logging.info('Caching category %s' % self.const)
-        cmdbCategoryCache[self.const] = self
+        if not is_categorie_cached(self.const):
+            logging.info('Caching category %s' % self.const)
+            cmdbCategoryCache[self.const] = self
 
     def get_id(self):
         return self.id
@@ -228,71 +230,46 @@ class CMDBCategoryValues(dict):
     def _fill_category_data(self, fields):
         self.id = fields['id']
         for key in self.category.getFields():
-            dict.__setitem__(self, key, fields[key])
+            data_type = self.category.get_field_data_type(key)
+            info_type = self.category.get_field_info_type(key)
+            try:
+                field_representation = value_representation_factory(data_type, info_type, fields[key])
+                dict.__setitem__(self, key, field_representation)
+            except Exception as e:
+                raise Exception('Failed to create representation value for field %s in category %s' % (key, self.category.const), e)
 
     def __setitem__(self, index, value):
         if self.category.hasfield(index):
             # Get type, value of field
-            field_data_type = self.category.get_field_data_type(index)
-            field_info_type = self.category.get_field_info_type(index)
-            field_value = None
+            field_representation = None
             if index in self:
                 self._field_up2date_state[index] = self[index] == value
-                field_value = dict.__getitem__(self, index)
+                field_representation = dict.__getitem__(self, index)
             else:
                 self._field_up2date_state[index] = False
-            # rough field Type/handling detection
-            if field_data_type == 'int':
-                if type(field_value) is list:
-                    # TODO We need to encapsulate values in an extra type ....
-                    #      to get a better guess
-                    pass
-                else:
-                    if not isinstance(field_value, dict):
-                        field_value = dict()
-                    field_value['value'] = value
-                    if field_info_type == 'dialog':
-                        field_value = value 
-                    value = field_value
-            elif field_data_type == 'text':
-                if not isinstance(field_value, dict):
-                    field_value = dict()
-                field_value['ref_title'] = value
-                value = field_value
-            dict.__setitem__(self, index, value)
+                data_type = self.category.get_field_data_type(index)
+                info_type = self.category.get_field_info_type(index)
+                field_representation = value_representation_factory(data_type, info_type)
+
+            field_representation.set(value)
+            dict.__setitem__(self, index, field_representation)
         else:
             raise KeyError("Category " + self.category.const + " has no field " + index)
 
     def __getitem__(self, index):
         field_data_type = self.category.get_field_data_type(index)
         field_info_type = self.category.get_field_info_type(index)
-        field_value = dict.__getitem__(self, index)
-        if not field_value:
+        field_representation = dict.__getitem__(self, index)
+        if not field_representation:
             return None
-        if field_data_type == 'int':
-            if type(field_value) is list:
-                print("List: %s" % index)
-                if len(field_value) == 0:
-                    field_value = None
-                else:
-                    field_value = [val['id'] for val in field_value]
-            elif 'value' in field_value:
-                field_value = field_value['value']
-            elif field_info_type == 'dialog':
-                if field_value is dict and 'id' in field_value:
-                    field_value = field_value['id']
-        elif field_data_type == 'text':
-            if type(field_value) is dict:
-                field_value = field_value['ref_title']
-        return field_value
+        return field_representation.get()
 
     def items(self):
         keys = dict.keys(self)
         return [(key, self[key]) for key in keys]
 
     def values(self):
-        keys = dict.keys(self)
-        return [self[key] for key in keys]
+        return [value.store() for key, value in dict.items(self)]
 
     def update(self, other_dict):
         for key, val in other_dict.items():
