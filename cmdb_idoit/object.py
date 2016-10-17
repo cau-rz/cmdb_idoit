@@ -188,8 +188,7 @@ class CMDBObject(dict):
             self.id = result['id']
         
         requests = dict()
-        cnt = 0
-    
+
         for category_const in self.getTypeCategories():
             category = get_category(category_const)
             parameter = dict()
@@ -217,7 +216,7 @@ class CMDBObject(dict):
                             parameter['data']['id'] = field.id
                         else:
                             method = "cmdb.category.create"
-                        request(method, parameter)
+                        requests[len(requests)] = {'method':method, 'parameter': parameter}
                         field.mark_updated()
                     else:
                         logging.debug("Category %s/%s of Object %s has no updates skipping" % (category_const, field.id, self.id))
@@ -225,7 +224,7 @@ class CMDBObject(dict):
                     if field.id:
                         method = "cmdb.category.delete"
                         parameter['id'] = field.id
-                        request(method, parameter)
+                        requests[len(requests)] = {'method':"cmdb.category.delete", 'parameter': parameter}
             elif self.fields[category_const].has_updates():
                 parameter['data'] = dict()
                 parameter['data']['id'] = self.fields[category_const].id
@@ -236,8 +235,7 @@ class CMDBObject(dict):
                     method = "cmdb.category.update"
                 else:
                     method = "cmdb.category.create"
-                requests[cnt] = {'method':method, 'parameter': parameter}
-                cnt = cnt + 1
+                requests[len(requests)] = {'method': method, 'parameter': parameter}
                 self.fields[category_const].mark_updated()
             else:
                 logging.debug("Category %s of Object %s has no updates skipping" % (category_const, self.id))
