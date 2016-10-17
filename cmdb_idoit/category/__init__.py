@@ -259,10 +259,11 @@ class CMDBCategoryValues(dict):
     def __getitem__(self, index):
         field_data_type = self.category.get_field_data_type(index)
         field_info_type = self.category.get_field_info_type(index)
-        field_representation = dict.__getitem__(self, index)
-        if not field_representation:
+        if index in self:
+          field_representation = dict.__getitem__(self, index)
+          return field_representation.get()
+        else:
             return None
-        return field_representation.get()
 
     def items(self):
         keys = dict.keys(self)
