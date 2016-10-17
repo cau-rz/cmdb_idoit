@@ -104,7 +104,7 @@ def multi_requests(method, parameters):
     """
     if not type(parameters) is dict:
         raise TypeError('parameters not of type dict, but instead ', type(parameters))
-
+    
     payload = list()
     for key, parameter in parameters.items():
         if not type(parameter) is dict:
@@ -113,6 +113,51 @@ def multi_requests(method, parameters):
         payload.append({
             "id": key,
             "method": method,
+            "params": parameter,
+            "version": "2.0"})
+
+    logging.debug('request_payload:' + json.dumps(payload, sort_keys=True, indent=4))
+    response = session.post(url, data=json.dumps(payload), verify=False, stream=False)
+
+    # Validate response
+    status_code = response.status_code
+    if status_code > 400:
+        raise Exception("HTTP-Error(%i)" % status_code)
+
+    if 'content-type' in response.headers:
+        if not response.headers['content-type'] == 'application/json':
+            raise Exception("Response has unexpected content-type: %s", response.headers['content-type'])
+    res_jsons = response.json()
+
+    result = dict()
+    for res_json in res_jsons:
+        # Raise Exception when an error accures
+        if 'error' in res_json and res_json['error']:
+            logging.error(res_json['error'])
+        else:
+            result[res_json['id']] = res_json['result']
+
+    logging.debug('result:' + json.dumps(result, sort_keys=True, indent=4))
+    return result
+
+def multi_method_request(parameters):
+    global url
+    """
+    Call a JSON RPC `method` with given `parameters`. Automagically handling authentication
+    and error handling.
+    """
+    if not type(parameters) is dict:
+        raise TypeError('parameters not of type dict, but instead ', type(parameters))
+    
+    payload = list()
+    for key, call in parameters.items():
+        parameter = call['parameter']
+        if not type(parameter) is dict:
+            raise TypeError('entry of parameters not of type dict, but instead ', type(parameter))
+        parameter['apikey'] = apikey
+        payload.append({
+            "id": key,
+            "method": call['method'],
             "params": parameter,
             "version": "2.0"})
 

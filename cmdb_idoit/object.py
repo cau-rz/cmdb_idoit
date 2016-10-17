@@ -186,7 +186,10 @@ class CMDBObject(dict):
 
         if is_create:
             self.id = result['id']
-
+        
+        requests = dict()
+        cnt = 0
+    
         for category_const in self.getTypeCategories():
             category = get_category(category_const)
             parameter = dict()
@@ -200,7 +203,7 @@ class CMDBObject(dict):
             # Skip this category iff we are not creating and field is not fetched
             if not is_create and not self._is_category_data_fetched(category_const):
                 continue
-
+            
             if multi_value:
                 for field in self.fields[category_const]:
                     if field.has_updates():
@@ -233,7 +236,10 @@ class CMDBObject(dict):
                     method = "cmdb.category.update"
                 else:
                     method = "cmdb.category.create"
-                request(method, parameter)
+                requests[cnt] = {'method':method, 'parameter': parameter}
+                cnt = cnt + 1
                 self.fields[category_const].mark_updated()
             else:
                 logging.debug("Category %s of Object %s has no updates skipping" % (category_const, self.id))
+
+        multi_method_request(requests)
