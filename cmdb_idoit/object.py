@@ -191,9 +191,9 @@ class CMDBObject(dict):
 
         for category_const in self.getTypeCategories():
             category = get_category(category_const)
-            parameter = dict()
-            parameter['objID'] = self.id
-            parameter['category'] = category_const
+            pm_tpl = dict()
+            pm_tpl['objID'] = self.id
+            pm_tpl['category'] = category_const
 
             object_type = get_cmdb_type(self.type)
 
@@ -206,12 +206,14 @@ class CMDBObject(dict):
             if multi_value:
                 for field in self.fields[category_const]:
                     if field.has_updates():
+                        parameter = pm_tpl.copy()
                         parameter['data'] = dict()
+                        logging.debug("%s" % (category_const))
                         for key, value in field.items():
                             logging.debug("%s[%s](%s)=%s" % (category_const, key, category.get_field_data_type(key), str(value)))
                             if field.has_value_been_updated(key):
                                 parameter['data'][key] = value
-                        if field.id:
+                        if field.id is not None:
                             method = "cmdb.category.update"
                             parameter['data']['id'] = field.id
                         else:
@@ -222,10 +224,13 @@ class CMDBObject(dict):
                         logging.debug("Category %s/%s of Object %s has no updates skipping" % (category_const, field.id, self.id))
                 for field in self.fields[category_const].deleted_items:
                     if field.id:
+                        parameter = pm_tpl.copy()
+                        logging.debug("Delete %s[%s]" % (category_const, str(field.id)))
                         method = "cmdb.category.delete"
                         parameter['id'] = field.id
                         requests[len(requests)] = {'method':"cmdb.category.delete", 'parameter': parameter}
             elif self.fields[category_const].has_updates():
+                parameter = pm_tpl.copy()
                 parameter['data'] = dict()
                 parameter['data']['id'] = self.fields[category_const].id
                 for key, value in self.fields[category_const].items():
