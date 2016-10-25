@@ -168,12 +168,12 @@ class CMDBCategoryValuesList(list):
     A model of a multi value category of an object.
     """
 
-    deleted_items = list()
 
     def __init__(self, category):
         self.category = category
         self._field_up2date_state = dict()
         self.mark_updated(False)
+        self.deleted_items = list()
 
     def __setitem__(self, index, value):
         cat_value = self._dict_to_catval(value)
@@ -186,6 +186,7 @@ class CMDBCategoryValuesList(list):
         else:
             item = list.__getitem__(self, index)
             if isinstance(item, CMDBCategoryValues) and item.id:
+                logging.debug("Add %s[%s] to deleted items" % (self.category.const,item.id))
                 self.deleted_items.append(item)
             list.__delitem__(self, index)
 
@@ -220,9 +221,9 @@ class CMDBCategoryValues(dict):
     """
     A model of category data of an object.
     """
-    id = None
 
     def __init__(self, category):
+        self.id = None
         self.category = category
         self._field_up2date_state = dict()
         self.mark_updated(False)

@@ -26,7 +26,6 @@ class CMDBObjects(list):
 
     By default no filters are applied resulting this to be the list of all object in the cmdb.
     """
-    filters = dict()
 
     def __init__(self, filters=dict()):
         self.filters = filters
