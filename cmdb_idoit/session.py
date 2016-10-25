@@ -149,6 +149,9 @@ def multi_method_request(parameters):
     if not type(parameters) is dict:
         raise TypeError('parameters not of type dict, but instead ', type(parameters))
     
+    if len(parameters) == 0:
+        return {}
+
     payload = list()
     for key, call in parameters.items():
         parameter = call['parameter']
