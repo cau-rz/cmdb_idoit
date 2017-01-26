@@ -83,7 +83,6 @@ def request(method, parameters):
         if not response.headers['content-type'] == 'application/json':
             raise Exception("Response has unexpected content-type: %s for request %s" % (response.headers['content-type'],url),response.content)
     try:
-        print(response.content)
         res_json = response.json()
     except ValueError:
         return None
