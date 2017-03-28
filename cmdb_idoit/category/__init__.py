@@ -15,6 +15,8 @@
     along with cmdb_idoit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from enum import Enum
+
 from cmdb_idoit.session import *
 from cmdb_idoit.category.value_factory import *
 
@@ -45,7 +47,16 @@ class CMDBCategoryCache(dict):
 cmdbCategoryCache = CMDBCategoryCache()
 
 
-def get_category(category_const, category_id=None, category_global=False):
+class CMDBCategoryType(Enum):
+    """
+    A enumeration of the types of categories.
+    """
+    type_global = 1
+    type_specific = 2
+    type_custom = 3 
+
+
+def get_category(category_const, category_id=None, category_global=CMDBCategoryType.type_specific):
     """
     Returns a `CMDBCategory` object iff a identifiable object is in `CMDBCategoryCache`.
     A object is identifiable if category_const is either the constant for that `CMDBCategory`
@@ -80,10 +91,12 @@ def fetch_categories(categories):
     parameters = dict()
     for categorie in categories:
         parameter = dict()
-        if categorie['global']:
+        if categorie['global'] == CMDBCategoryType.type_global:
             parameter['catgID'] = categorie['id']
-        else:
+        elif categorie['global'] == CMDBCategoryType.type_specific:
             parameter['catsID'] = categorie['id']
+        else:
+            parameter['category'] = categorie['const'];
         if not is_categorie_cached(categorie['const']):
             parameters[int(categorie['id'])] = parameter
 
@@ -101,7 +114,6 @@ def fetch_categories(categories):
 
     return fetched
 
-
 class CMDBCategory(dict):
     """
     A model representing a CMDB category.
@@ -109,18 +121,22 @@ class CMDBCategory(dict):
     Each category is a set of fields, which have a data representation
     and a information type.
     """
+    
 
-    def __init__(self, category_id, category_const, global_category, result=None):
+    def __init__(self, category_id, category_const, category_type, result=None):
         self.id = category_id
         self.const = category_const
-        self.global_category = global_category
+        self.category_type = category_type
+        self.custom_category = False
         self.fields = dict()
 
         parameter = dict()
-        if self.global_category:
+        if self.is_global_category():
             parameter['catgID'] = self.id
-        else:
+        elif self.is_specific_category():
             parameter['catsID'] = self.id
+        else:
+            parameter['category'] = self.const
 
         if result is None:
             result = request('cmdb.category_info', parameter)
@@ -160,7 +176,14 @@ class CMDBCategory(dict):
         return self.fields[index]['info']['type']
 
     def is_global_category(self):
-        return self.global_category
+        return self.category_type == CMDBCategoryType.type_global
+
+    def is_specific_category(self):
+        return self.category_type == CMDBCategoryType.type_specific
+
+    def is_custom_category(self):
+        return self.category_type == CMDBCategoryType.type_custom
+
 
 
 class CMDBCategoryValuesList(list):

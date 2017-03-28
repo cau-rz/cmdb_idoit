@@ -87,7 +87,8 @@ class CMDBType(dict):
         self.title = None
         self.meta = dict()
         self.global_categories = dict()
-        self.special_categories = dict()
+        self.specific_categories = dict()
+        self.custom_categories= dict()
 
         self._load(type_id)
         cmdbTypeCache[self.get_id()] = self
@@ -128,14 +129,17 @@ class CMDBType(dict):
         # process structural information about categories
         categories = list()
         if 'catg' in result:
-            categories += [(True, c) for c in result['catg']]
+            categories += [(CMDBCategoryType.type_global, c) for c in result['catg']]
 
         if 'cats' in result:
-            categories += [(False, c) for c in result['cats']]
+            categories += [(CMDBCategoryType.type_specific, c) for c in result['cats']]
+
+        if 'custom' in result:
+            categories += [(CMDBCategoryType.type_custom, c) for c in result['custom']]
 
         categories_parameter = list()
-        for glob, cat in categories:
-            categories_parameter.append({'id': cat['id'], 'const': cat['const'], 'global': glob})
+        for category_type, category in categories:
+            categories_parameter.append({'id': category['id'], 'const': category['const'], 'global': category_type})
         logging.info("Fetch categories for type %s" % self.const)
         fetch_categories(categories_parameter)
 
@@ -151,17 +155,21 @@ class CMDBType(dict):
             category_type_inclusion.category = category_object
             if category_object.is_global_category():
                 self.global_categories[category_object.get_const()] = category_type_inclusion
+            elif category_object.is_specific_category():
+                self.specific_categories[category_object.get_const()] = category_type_inclusion
             else:
-                self.special_categories[category_object.get_const()] = category_type_inclusion
+                self.custom_categories[category_object.get_const()] = category_type_inclusion
 
     def get_category_inclusion(self, category_const):
         if category_const in self.global_categories:
             return self.global_categories[category_const]
+        elif category_const in self.specific_categories:
+            return self.specific_categories[category_const]
         else:
-            return self.special_categories[category_const]
+            return self.custom_categories[category_const]
 
     def getCategories(self):
-        return list(self.global_categories.keys()) + list(self.special_categories.keys())
+        return list(self.global_categories.keys()) + list(self.specific_categories.keys()) + list(self.custom_categories.keys())
 
     def getObjectStructure(self):
         """
@@ -170,7 +178,7 @@ class CMDBType(dict):
         """
         values = dict()
 
-        for category_object in list(self.global_categories.values()) + list(self.special_categories.values()):
+        for category_object in list(self.global_categories.values()) + list(self.specific_categories.values()) + list(self.custom_categories.values()):
             if category_object.multi_value:
                 values[category_object.category.get_const()] = CMDBCategoryValuesList(category_object.category)
             else:
