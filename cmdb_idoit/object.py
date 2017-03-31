@@ -42,6 +42,12 @@ class CMDBObjects(list):
                 return obj
         return None
 
+    def find_object_by_title(self, title):
+        for obj in self:
+            if obj.title == title:
+                return obj
+        return None
+
     def find_object_by_field(self, category_const, key, value):
         """
         Find an object by category field. This function will not always work
