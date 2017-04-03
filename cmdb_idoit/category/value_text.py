@@ -25,7 +25,12 @@ class CMDBCategoryValueText(CMDBCategoryValueBase):
             if 'ref_title' in value:
                 self.value = value['ref_title']
             else:
-                raise TypeError("No valid text representation", value)
+                self.value = None
+                for key in value.keys():
+                    if not key.startswith('title') and not key.startswith('id'):
+                        self.value = value[key];
+                if self.value is None:
+                    raise TypeError("No valid text representation", value)
         elif isinstance(value, str):
             self.value = value
         elif value is None:
