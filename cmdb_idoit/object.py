@@ -239,8 +239,9 @@ class CMDBObject(dict):
                 parameter['data'] = dict()
                 parameter['data']['id'] = self.fields[category_const].id
                 for key, value in self.fields[category_const].items():
-                    logging.debug("%s[%s](%s)=%s" % (category_const, key, category.get_field_data_type(key), str(value)))
-                    parameter['data'][key] = value
+                    if(self.fields[category_const].has_value_been_updated(key)):
+                        logging.debug("%s[%s](%s)=%s" % (category_const, key, category.get_field_data_type(key), str(value)))
+                        parameter['data'][key] = value
                 if parameter['data']['id']:
                     method = "cmdb.category.update"
                 else:
