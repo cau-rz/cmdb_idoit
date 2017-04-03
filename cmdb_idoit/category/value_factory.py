@@ -32,6 +32,10 @@ def value_representation_factory(data_type, info_type, value=None):
                 return CMDBCategoryValueInt(value)
             elif info_type == 'int':
                 return CMDBCategoryValueInt(value)
+            elif info_type == 'n2m':
+                return CMDBCategoryValueBase(value)
+            elif info_type == 'multiselect':
+                return CMDBCategoryValueBase(value)
             else:
                 raise NotImplementedError('Info type %s with data type %s is not implemented' % (info_type, data_type))
         elif data_type == 'float':
