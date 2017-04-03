@@ -26,6 +26,8 @@ def value_representation_factory(data_type, info_type, value=None):
         if data_type == 'int':
             if info_type == 'dialog':
                 return CMDBCategoryValueDialog(value)
+            elif info_type == 'dialog_list':
+                return CMDBCategoryValueDialog(value)
             elif info_type == 'dialog_plus':
                 return CMDBCategoryValueDialog(value)
             elif info_type == 'object_browser':
