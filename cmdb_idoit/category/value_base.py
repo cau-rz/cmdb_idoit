@@ -46,6 +46,9 @@ class CMDBCategoryValueBase:
         """
         return self.value
 
+    def __repr__(self):
+        return repr(self.value)
+
 
 class CMDBCategoryValueInt(CMDBCategoryValueBase):
     pass
