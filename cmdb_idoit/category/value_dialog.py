@@ -29,6 +29,14 @@ class CMDBCategoryValueDialog(CMDBCategoryValueBase):
                 self.value = value['value']
             else:
                 raise TypeError("No valid int-dialog representation", value)
+        elif isinstance(value,list):
+            for val in value:
+                if 'id' in val:
+                    self.value = val['id']
+                elif 'value' in val:
+                    self.value = val['value']
+                else:
+                    raise TypeError("No valid int-dialog representation", value)
         elif value is None:
             pass
         elif isinstance(value, list) and len(value) == 0:
