@@ -150,7 +150,11 @@ class CMDBObject(dict):
 
     def __setattr__(self, name, value):
         if name != "is_up2date":
-            self.is_up2date = False
+            try:
+                if self.__getattribute__(name) != value:
+                    self.is_up2date = False
+            except AttributeError:
+                self.is_up2date = False
         super(CMDBObject, self).__setattr__(name, value)
 
     def __repr__(self):
