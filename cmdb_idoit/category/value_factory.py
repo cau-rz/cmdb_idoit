@@ -21,7 +21,9 @@ from .value_dialog import *
 from .value_text import *
 
 
-def value_representation_factory(data_type, info_type, value=None):
+def value_representation_factory(field_object, value=None):
+    data_type = field_object['data']['type']
+    info_type = field_object['info']['type']
     try:
         if data_type == 'int':
             if info_type == 'dialog':
