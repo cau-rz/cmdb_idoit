@@ -71,7 +71,7 @@ def request(method, parameters):
         "method": method,
         "params": parameters,
         "version": "2.0"}
-    logging.debug('request_payload:' + json.dumps(payload, sort_keys=True, indent=4))
+    logging.debug('request:request_payload:' + json.dumps(payload, sort_keys=True, indent=4))
     response = session.post(url, data=json.dumps(payload), verify=False, stream=False)
 
     # Validate response
@@ -174,8 +174,16 @@ def multi_method_request(parameters):
 
     if 'content-type' in response.headers:
         if not response.headers['content-type'] == 'application/json':
-            raise Exception("Response has unexpected content-type: %s", response.headers['content-type'])
-    res_jsons = response.json()
+            raise Exception("Response has unexpected content-type: %s" % response.headers['content-type'],response.content)
+    try:
+        res_jsons = response.json()
+    except Exception as e:
+        logging.error("multi_method_request: Failed to parse result",response.content)
+        # Try to decode the last line of the response.
+        try:
+          res_jsons = json.loads(response.text.splitlines()[-1])
+        except:
+          raise e
 
     result = dict()
     for res_json in res_jsons:
