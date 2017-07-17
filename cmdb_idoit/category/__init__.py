@@ -98,7 +98,10 @@ def fetch_categories(categories):
         else:
             parameter['category'] = categorie['const'];
         if not is_categorie_cached(categorie['const']):
-            parameters[int(categorie['id'])] = parameter
+            if categorie['global'] == CMDBCategoryType.type_custom:
+               parameters[10000 + int(categorie['id'])] = parameter
+            else:
+               parameters[int(categorie['id'])] = parameter
 
     if len(parameters) > 0:
         results = multi_requests('cmdb.category_info', parameters)
@@ -107,10 +110,16 @@ def fetch_categories(categories):
 
     fetched = list()
     for categorie in categories:
-        if int(categorie['id']) in results:
-            fetched.append(CMDBCategory(categorie['id'], categorie['const'], categorie['global'], results[int(categorie['id'])]))
-        elif is_categorie_cached(categorie['const']):
-            fetched.append(get_category(categorie['const']))
+        if categorie['global'] == CMDBCategoryType.type_custom:
+            if 10000 + int(categorie['id']) in results:
+                fetched.append(CMDBCategory(categorie['id'], categorie['const'], categorie['global'], results[10000 + int(categorie['id'])]))       
+            elif is_categorie_cached(categorie['const']):
+                fetched.append(get_category(categorie['const'])) 
+        else:
+            if int(categorie['id']) in results:
+                fetched.append(CMDBCategory(categorie['id'], categorie['const'], categorie['global'], results[int(categorie['id'])]))
+            elif is_categorie_cached(categorie['const']):
+                fetched.append(get_category(categorie['const']))
 
     return fetched
 
