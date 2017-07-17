@@ -56,7 +56,7 @@ class CMDBCategoryType(Enum):
     type_custom = 3 
 
 
-def get_category(category_const, category_id=None, category_global=CMDBCategoryType.type_specific):
+def get_category(category_const, category_id=None, category_type=CMDBCategoryType.type_specific):
     """
     Returns a `CMDBCategory` object iff a identifiable object is in `CMDBCategoryCache`.
     A object is identifiable if category_const is either the constant for that `CMDBCategory`
@@ -74,7 +74,7 @@ def get_category(category_const, category_id=None, category_global=CMDBCategoryT
     if is_categorie_cached(category_const):
         return cmdbCategoryCache[category_const]
     elif category_id:
-        return CMDBCategory(category_id, category_const, category_global)
+        return CMDBCategory(category_id, category_const, category_type)
     else:
         return None
 
