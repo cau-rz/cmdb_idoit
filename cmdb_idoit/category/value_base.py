@@ -51,4 +51,19 @@ class CMDBCategoryValueBase:
 
 
 class CMDBCategoryValueInt(CMDBCategoryValueBase):
-    pass
+
+    def __init__(self,value=None):
+        if value is not None:
+            if isinstance(value,list):
+                if len(value) == 0:
+                    value = None
+                elif len(value) == 1:
+                    value = value.pop()
+                else:
+                    raise Exception("Can't interpretate integer from array with multiple entries: %s",str(value))
+            if isinstance(value,dict):
+                if 'id' in value:
+                    value = value['id']
+                else:
+                    raise Exception("Can't guess the index of a dict to get the right integer: %s",str(value))
+            self.value = value
