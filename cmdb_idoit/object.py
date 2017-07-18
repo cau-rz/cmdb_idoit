@@ -37,6 +37,8 @@ class CMDBObjects(list):
             self.append(cmdb_object)
 
     def find_object_by_id(self, id):
+        if isinstance(id,int):
+            id = str(id)
         for obj in self:
             if obj.id == id:
                 return obj
