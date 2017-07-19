@@ -19,6 +19,7 @@
 from .value_base import *
 from .value_dialog import *
 from .value_text import *
+from .value_datetime import *
 
 
 def value_representation_factory(field_object, value=None):
@@ -61,6 +62,8 @@ def value_representation_factory(field_object, value=None):
                 return CMDBCategoryValueBase(value)
             else:
                 raise NotImplementedError('Info type %s with data type %s is not implemented' % (info_type, data_type))
+        elif data_type == 'date_time':
+            return CMDBCategoryValueDateTime(value)
         else:
             raise NotImplementedError('Data type %s is not implement' % data_type)
     except Exception as e:
