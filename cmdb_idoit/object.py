@@ -114,6 +114,16 @@ class CMDBObject(dict):
             for category_const in self.getTypeCategories():
                 self._fetch_category_data(category_const)
 
+    def loadAllCategoryData(self):
+        categories = self.getTypeCategories()
+        parameters = dict()
+        for category_const in categories:
+            parameters[category_const] = {'objID': self.id, 'category': category_const}
+        result = multi_requests('cmdb.category', parameters)
+        for category_const in result:
+            if len(result[category_const]) > 0:
+                self._fill_category_data(category_const,result[category_const])
+
     def _is_category_data_fetched(self, category_const):
         return self.field_data_fetched[category_const]
 
