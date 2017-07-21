@@ -27,8 +27,12 @@ class CMDBObjects(list):
     By default no filters are applied resulting this to be the list of all object in the cmdb.
     """
 
-    def __init__(self, filters=dict()):
+    def __init__(self, filters=dict(),limit = 0):
         self.filters = filters
+
+        parameter = {'filter': self.filters}
+        if limit != 0:
+            parameter['limit'] = limit;
 
         result = request('cmdb.objects', {'filter': self.filters})
         for raw_object in result:
