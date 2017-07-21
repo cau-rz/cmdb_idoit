@@ -63,7 +63,9 @@ class CMDBCategoryValueInt(CMDBCategoryValueBase):
                     raise Exception("Can't interpretate integer from array with multiple entries: %s",str(value))
             if isinstance(value,dict):
                 if 'id' in value:
-                    value = value['id']
+                    value = int(value['id'])
+                elif 'title' in value:
+                    value = int(value['title'])
                 else:
                     raise Exception("Can't guess the index of a dict to get the right integer: %s",str(value))
             self.value = value
