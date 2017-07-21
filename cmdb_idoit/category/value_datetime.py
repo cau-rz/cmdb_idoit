@@ -7,7 +7,7 @@ import time
 class CMDBCategoryValueDateTime(CMDBCategoryValueBase):
 
     def __init__(self, value=None):
-        if value is None:
+        if value is None or len(value) == 0:
             self.value = None
         else:
             # Example: 2017-07-18 14:10:03 - 14:10
