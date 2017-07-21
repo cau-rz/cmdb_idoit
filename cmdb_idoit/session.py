@@ -28,6 +28,9 @@ apikey = None
 headers = {'content-type': 'application/json'}
 
 session = requests.Session()
+session_stats = { 'requests': 0,
+                  'queries': 0
+                }
 
 
 def init_session(cmdb_url, cmdb_apikey, cmdb_username, cmdb_password):
@@ -73,6 +76,8 @@ def request(method, parameters):
         "version": "2.0"}
     logging.debug('request:request_payload:' + json.dumps(payload, sort_keys=True, indent=4))
     response = session.post(url, data=json.dumps(payload), verify=False, stream=False)
+    session_stats['requests'] += 1
+    session_stats['queries'] += 1
 
     # Validate response
     status_code = response.status_code
@@ -118,6 +123,8 @@ def multi_requests(method, parameters):
 
     logging.debug('request_payload:' + json.dumps(payload, sort_keys=True, indent=4))
     response = session.post(url, data=json.dumps(payload), verify=False, stream=False)
+    session_stats['requests'] += 1
+    session_stats['queries'] += len(payload)
 
     # Validate response
     status_code = response.status_code
@@ -166,6 +173,8 @@ def multi_method_request(parameters):
 
     logging.debug('request_payload:' + json.dumps(payload, sort_keys=True, indent=4))
     response = session.post(url, data=json.dumps(payload), verify=False, stream=False)
+    session_stats['requests'] += 1
+    session_stats['queries'] += len(payload)
 
     # Validate response
     status_code = response.status_code
