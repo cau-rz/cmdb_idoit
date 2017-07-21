@@ -13,3 +13,13 @@ class CMDBCategoryValueDateTime(CMDBCategoryValueBase):
             # Example: 2017-07-18 14:10:03 - 14:10
             value = str(value).split(' - ')[0]
             self.value = datetime.datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+
+class CMDBCategoryValueDate(CMDBCategoryValueBase):
+
+    def __init__(self, value=None):
+        if value is None or len(value) == 0 or value == '-':
+            self.value = None
+        else:
+            # Example: 2017-07-18
+            value = str(value).split(' ')[0]
+            self.value = datetime.datetime.strptime(value, "%Y-%m-%d")
