@@ -22,25 +22,30 @@ from .value_base import CMDBCategoryValueBase
 class CMDBCategoryValueDialog(CMDBCategoryValueBase):
 
     def __init__(self, value=None):
-        if isinstance(value, dict):
-            if 'id' in value:
-                self.value = value['id']
-            elif 'value' in value:
-                self.value = value['value']
-            else:
-                raise TypeError("No valid int-dialog representation", value)
+        if isinstance(value,bool):
+            return None
+        elif isinstance(value, dict):
+            self._init_handle_dict(value)
         elif isinstance(value,list):
             for val in value:
-                if 'id' in val:
-                    self.value = val['id']
-                elif 'value' in val:
-                    self.value = val['value']
-                else:
-                    raise TypeError("No valid int-dialog representation", value)
+                self._init_handle_dict(val)
         elif value is None:
             pass
         elif isinstance(value, list) and len(value) == 0:
             # This case is equivalent to the previous
             pass
+        else:
+            raise TypeError("No valid int-dialog representation", value)
+
+    def _init_handle_dict(self, value):
+        if isinstance(value, dict):
+            if 'id' in value:
+                self.value = value['id']
+            elif 'obj_id' in value:
+                self.value = value['obj_id']
+            elif 'value' in value:
+                self.value = value['value']
+            else:
+                raise TypeError("No valid int-dialog representation", value)
         else:
             raise TypeError("No valid int-dialog representation", value)
