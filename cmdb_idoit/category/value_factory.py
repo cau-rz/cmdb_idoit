@@ -30,6 +30,7 @@ def value_representation_factory(field_object, value=None):
             if info_type == 'dialog':
                 return CMDBCategoryValueDialog(value)
             elif info_type == 'dialog_list':
+                # List?
                 return CMDBCategoryValueDialog(value)
             elif info_type == 'dialog_plus':
                 return CMDBCategoryValueDialog(value)
@@ -50,7 +51,9 @@ def value_representation_factory(field_object, value=None):
                 raise NotImplementedError('Info type %s with data type %s is not implemented' % (info_type, data_type))
         elif data_type == 'double':
             if info_type == 'double':
-                return CMDBCategoryValueBase(value)
+                return CMDBCategoryValueDouble(value)
+            elif info_type == 'money':
+                return CMDBCategoryValueMoney(value)
             else:
                 raise NotImplementedError('Info type %s with data type %s is not implemented' % (info_type, data_type))
         elif data_type == 'text_area':
@@ -60,10 +63,20 @@ def value_representation_factory(field_object, value=None):
                 return CMDBCategoryValueText(value)
             elif info_type == 'multiselect':
                 return CMDBCategoryValueBase(value)
+            elif info_type == 'dialog':
+                return CMDBCategoryValueDialog(value)
+            elif info_type == 'dialog_list':
+                # List?
+                return CMDBCategoryValueDialog(value)
+            elif info_type == 'upload':
+                return CMDBCategoryValueBase(value)
             else:
                 raise NotImplementedError('Info type %s with data type %s is not implemented' % (info_type, data_type))
         elif data_type == 'date_time':
             return CMDBCategoryValueDateTime(value)
+        elif data_type == 'date':
+            if info_type == 'date':
+                return CMDBCategoryValueDate(value)
         else:
             raise NotImplementedError('Data type %s is not implement' % data_type)
     except Exception as e:
