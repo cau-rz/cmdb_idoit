@@ -52,7 +52,7 @@ def init_session_from_config(instance='main'):
     apikey = config[instance].get('apikey')
 
     session.auth = requests.auth.HTTPBasicAuth(username, password)
-    session.verify = False
+    session.verify = config[instance].get('verify',True)
     session.headers.update(headers)
 
 
