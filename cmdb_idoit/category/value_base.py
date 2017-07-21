@@ -69,3 +69,21 @@ class CMDBCategoryValueInt(CMDBCategoryValueBase):
                 else:
                     raise Exception("Can't guess the index of a dict to get the right integer: %s",str(value))
             self.value = value
+
+class CMDBCategoryValueDouble(CMDBCategoryValueBase):
+    
+    def __init__(self, value = None):
+        if value is None:
+            self.value = None
+        else:
+            self.value = float(value)
+
+class CMDBCategoryValueMoney(CMDBCategoryValueBase):
+    def __init__(self, value = None):
+        if value is None:
+            self.value = None
+        else:
+            if isinstance(value,dict):
+                if 'title' in value:
+                    self.value = float(value['title'].split(' ')[0])
+
