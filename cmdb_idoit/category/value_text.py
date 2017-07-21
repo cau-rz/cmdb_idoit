@@ -33,6 +33,8 @@ class CMDBCategoryValueText(CMDBCategoryValueBase):
                     raise TypeError("No valid text representation", value)
         elif isinstance(value, str):
             self.value = value
+        elif isinstance(value, bool):
+            self.value = None
         elif value is None or isinstance(value,list):
             pass
         else:
