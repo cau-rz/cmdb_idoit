@@ -15,6 +15,8 @@
     along with cmdb_idoit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
+
 
 class CMDBCategoryValueBase:
     """
@@ -69,6 +71,21 @@ class CMDBCategoryValueInt(CMDBCategoryValueBase):
                 else:
                     raise Exception("Can't guess the index of a dict to get the right integer: %s",str(value))
             self.value = value
+
+
+class CMDBCategoryValueListInt(CMDBCategoryValueBase):
+
+    def __init__(self,value=None):
+        self.value = list()
+        if value is not None:
+            if isinstance(value,list):
+                if len(value) == 0:
+                    value = None
+                elif len(value) >= 1:
+                    for val in value:
+                        self.value.append(CMDBCategoryValueInt(val))
+            else:
+                self.value.append(CMDBCategoryValueInt(value))
 
 class CMDBCategoryValueDouble(CMDBCategoryValueBase):
     
