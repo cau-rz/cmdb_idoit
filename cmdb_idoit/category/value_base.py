@@ -16,6 +16,7 @@
 """
 
 import logging
+import locale
 
 
 class CMDBCategoryValueBase:
@@ -95,9 +96,10 @@ class CMDBCategoryValueDouble(CMDBCategoryValueBase):
         else:
             if isinstance(value,dict):
                 if 'title' in value:
+                    locale.setlocale( locale.LC_ALL, 'en_US.UTF-8') 
                     value = value['title']
             try:
-               self.value = float(value)
+               self.value = locale.atof(value)
             except:
                 logging.warning("Float %s can't be parsed" % value)
                 self.value = value
@@ -108,6 +110,7 @@ class CMDBCategoryValueMoney(CMDBCategoryValueBase):
             self.value = None
         else:
             if isinstance(value,dict):
+                locale.setlocale( locale.LC_ALL, 'en_US.UTF-8') 
                 if 'title' in value:
-                    self.value = float(value['title'].split(' ')[0])
+                    self.value = locale.atof(value['title'].split(' ')[0])
 
