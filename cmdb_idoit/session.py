@@ -55,7 +55,7 @@ def init_session_from_config(instance='main'):
     apikey = config[instance].get('apikey')
 
     session.auth = requests.auth.HTTPBasicAuth(username, password)
-    session.verify = config[instance].get('verify',True)
+    session.verify = config[instance].get('verify',False)
     session.headers.update(headers)
 
 
@@ -75,7 +75,7 @@ def request(method, parameters):
         "params": parameters,
         "version": "2.0"}
     logging.debug('request:request_payload:' + json.dumps(payload, sort_keys=True, indent=4))
-    response = session.post(url, data=json.dumps(payload), verify=False, stream=False)
+    response = session.post(url, data=json.dumps(payload), stream=False)
     session_stats['requests'] += 1
     session_stats['queries'] += 1
 
@@ -122,7 +122,7 @@ def multi_requests(method, parameters):
             "version": "2.0"})
 
     logging.debug('request_payload:' + json.dumps(payload, sort_keys=True, indent=4))
-    response = session.post(url, data=json.dumps(payload), verify=False, stream=False)
+    response = session.post(url, data=json.dumps(payload), stream=False)
     session_stats['requests'] += 1
     session_stats['queries'] += len(payload)
 
@@ -172,7 +172,7 @@ def multi_method_request(parameters):
             "version": "2.0"})
 
     logging.debug('request_payload:' + json.dumps(payload, sort_keys=True, indent=4))
-    response = session.post(url, data=json.dumps(payload), verify=False, stream=False)
+    response = session.post(url, data=json.dumps(payload), stream=False)
     session_stats['requests'] += 1
     session_stats['queries'] += len(payload)
 
