@@ -76,7 +76,14 @@ class CMDBCategoryValueDouble(CMDBCategoryValueBase):
         if value is None:
             self.value = None
         else:
-            self.value = float(value)
+            if isinstance(value,dict):
+                if 'title' in value:
+                    value = value['title']
+            try:
+               self.value = float(value)
+            except:
+                logging.warning("Float %s can't be parsed" % value)
+                self.value = value
 
 class CMDBCategoryValueMoney(CMDBCategoryValueBase):
     def __init__(self, value = None):
