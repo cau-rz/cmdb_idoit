@@ -35,7 +35,7 @@ def value_representation_factory(field_object, value=None):
             elif info_type == 'dialog_plus':
                 return CMDBCategoryValueDialog(value)
             elif info_type == 'object_browser':
-                return CMDBCategoryValueInt(value)
+                return CMDBCategoryValueListInt(value)
             elif info_type == 'int':
                 return CMDBCategoryValueInt(value)
             elif info_type == 'n2m':
