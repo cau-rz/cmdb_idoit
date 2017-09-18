@@ -77,6 +77,18 @@ def cli_cat():
 def show_object_categories():
     pass
 
+@cli_cat.command("declaration")
+@click.argument('category_const')
+def show_category_declaration(category_const):
+    categorie = cmdb.get_category(category_const)
+    if categorie is None:
+        print("No category with name: %s" % category_const)
+        return
+    catstruct = dict()
+    for field in categorie.getFields():
+        catstruct[field] = "%s, %s" % (categorie.get_field_data_type(field),categorie.get_field_info_type(field))
+    print(json.dumps(catstruct, sort_keys=True, indent=4))
+
 @cli_cat.command("dialog")
 @click.argument("category_const")
 @click.argument("field_name")
