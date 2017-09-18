@@ -76,7 +76,7 @@ def get_category(category_const, category_id=None, category_type=CMDBCategoryTyp
     elif category_id:
         return CMDBCategory(category_id, category_const, category_type)
     else:
-        return None
+        return CMDBCategory(None,category_const,CMDBCategoryType.type_custom)
 
 
 def is_categorie_cached(category_const):
@@ -150,8 +150,12 @@ class CMDBCategory(dict):
             self.fields = result
 
         if not is_categorie_cached(self.const):
-            logging.info('Caching category %s' % self.const)
-            cmdbCategoryCache[self.const] = self
+            if self.id != None:
+                logging.info('Caching category %s' % self.const)
+                cmdbCategoryCache[self.const] = self
+            else:
+                logging.info('Not caching category %s' % self.const)
+
 
     def get_id(self):
         return self.id
