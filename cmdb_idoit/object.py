@@ -97,6 +97,11 @@ class CMDBObjects(list):
                 if parstr in result:
                   obj._fill_category_data(category_const, result[parstr])
 
+def loadObject(ident):
+    objects = CMDBObjects({'ids': [ident]})
+    return objects.pop()
+
+
 class CMDBObject(dict):
     """
     A CMDB Object.
