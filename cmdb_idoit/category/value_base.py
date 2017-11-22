@@ -57,21 +57,10 @@ class CMDBCategoryValueInt(CMDBCategoryValueBase):
 
     def __init__(self,value=None):
         if value is not None:
-            if isinstance(value,list):
-                if len(value) == 0:
-                    value = None
-                elif len(value) == 1:
-                    value = value.pop()
-                else:
-                    raise Exception("Can't interpretate integer from array with multiple entries: %s",str(value))
-            if isinstance(value,dict):
-                if 'id' in value:
-                    value = int(value['id'])
-                elif 'title' in value:
-                    value = int(value['title'])
-                else:
-                    raise Exception("Can't guess the index of a dict to get the right integer: %s",str(value))
-            self.value = value
+            try:
+               self.value = int(value)
+            except ValueError:
+                raise Exception("Can't guess the index of a dict to get the right integer: %s",str(value))
 
 
 class CMDBCategoryValueListInt(CMDBCategoryValueBase):
@@ -94,23 +83,25 @@ class CMDBCategoryValueDouble(CMDBCategoryValueBase):
         if value is None:
             self.value = None
         else:
-            if isinstance(value,dict):
-                if 'title' in value:
-                    locale.setlocale( locale.LC_ALL, 'en_US.UTF-8') 
-                    value = value['title']
             try:
-               self.value = locale.atof(value)
-            except:
+               #locale.setlocale( locale.LC_ALL, 'en_US.UTF-8') 
+               self.value = float(value)
+            except Exception as e:
                 logging.warning("Float %s can't be parsed" % value)
-                self.value = value
+                raise e
 
 class CMDBCategoryValueMoney(CMDBCategoryValueBase):
     def __init__(self, value = None):
-        if value is None:
+        if value is None or len(value.strip()) == 0:
             self.value = None
         else:
-            if isinstance(value,dict):
-                locale.setlocale( locale.LC_ALL, 'en_US.UTF-8') 
-                if 'title' in value:
-                    self.value = locale.atof(value['title'].split(' ')[0])
+            try:
+                money_value = value.split(' ')[0]
+                if len(money_value) == 0:
+                    self.value = 0
+                else:
+                    locale.setlocale( locale.LC_ALL, 'en_US.UTF-8')
+                    self.value = locale.atof(money_value)
+            except Exception as e:
+                raise Exception("String '%s' is not parseable" % value,e)
 

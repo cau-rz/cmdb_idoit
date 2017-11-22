@@ -71,7 +71,8 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
        'requests>=2.4',
-       'click>=6.0'
+       'click>=6.0',
+       'jsonpath_ng>=1.4.2',
     ],
 
     # List additional groups of dependencies here (e.g. development
@@ -86,9 +87,9 @@ setup(
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.
-    #package_data={
-    #    'sample': ['package_data.dat'],
-    #},
+    package_data={
+        'cmdb_idoit': ['category/map/*.map'],
+    },
 
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:

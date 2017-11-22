@@ -267,7 +267,7 @@ class CMDBCategoryValues(dict):
         self.id = fields['id']
         for key in self.category.getFields():
             try:
-                field_representation = value_representation_factory(self.category.getFieldObject(key), fields[key])
+                field_representation = value_representation_factory(self.category, key, fields[key])
                 dict.__setitem__(self, key, field_representation)
             except Exception as e:
                 raise Exception('Failed to create representation value for field %s in category %s' % (key, self.category.const), e)
@@ -281,7 +281,7 @@ class CMDBCategoryValues(dict):
                 field_representation = dict.__getitem__(self, index)
             else:
                 self._field_up2date_state[index] = False
-                field_representation = value_representation_factory(self.category.getFieldObject(index))
+                field_representation = value_representation_factory(self.category, index)
 
             field_representation.set(value)
             dict.__setitem__(self, index, field_representation)

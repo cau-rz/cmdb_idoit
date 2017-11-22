@@ -21,21 +21,8 @@ from .value_base import CMDBCategoryValueBase
 class CMDBCategoryValueText(CMDBCategoryValueBase):
 
     def __init__(self, value=None):
-        if isinstance(value, dict):
-            if 'ref_title' in value:
-                self.value = value['ref_title']
+        if value is not None:
+            if isinstance(value, str):
+                self.value = value
             else:
-                self.value = None
-                for key in value.keys():
-                    if not key.startswith('title') and not key.startswith('id'):
-                        self.value = value[key];
-                if self.value is None:
-                    raise TypeError("No valid text representation", value)
-        elif isinstance(value, str):
-            self.value = value
-        elif isinstance(value, bool):
-            self.value = None
-        elif value is None or isinstance(value,list):
-            pass
-        else:
-            raise TypeError("No valid text representation", value)
+                raise TypeError("No valid text representation", value)

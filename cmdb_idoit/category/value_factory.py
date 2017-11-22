@@ -20,9 +20,83 @@ from .value_base import *
 from .value_dialog import *
 from .value_text import *
 from .value_datetime import *
+from .value_gps import *
 
+import pkg_resources
+import re
+import jsonpath_ng
 
-def value_representation_factory(field_object, value=None):
+def read_rules():
+    resource_package = __name__  # Could be any module/package name
+    resource_path = '/'.join(('map', '1_9_4.map'))  # Do not use os.path.join(), see below
+
+    template = pkg_resources.resource_string(resource_package, resource_path)
+    rules = dict()
+    for line in template.decode('utf-8').splitlines():
+        rule_raw = re.split('[ \t]+',line)
+        if len(rule_raw) < 4:
+            raise Exception("None conformal rule: %s" % line)
+        if rule_raw[0] not in rules:
+            rules[rule_raw[0]] = dict()
+        rules[rule_raw[0]][rule_raw[1]] = { 'type': rule_raw[2], 'path': rule_raw[3] }
+    return rules
+
+rules = None
+
+def value_representation_factory(category,key,value = None):
+    global rules
+    category_const = category.get_const()
+    if rules is None:
+      rules = read_rules()
+    data_type = category.getFieldObject(key)['data']['type']
+    info_type = category.getFieldObject(key)['info']['type']
+    if value == False:
+        value = None
+    if isinstance(value,list) and len(value) == 0:
+        value = None
+    if isinstance(value,list) and isinstance(value[0],list) and len(value[0]) == 0:
+        value = None
+    if value is not None:
+        if category_const in rules:
+            if key in rules[category_const]:
+                itype = rules[category_const][key]['type']
+                jpath = jsonpath_ng.parse(rules[category_const][key]['path'])
+                matches = jpath.find(value)
+                if len(matches) == 0:
+                    raise Exception("Error matching value:",str(value))
+                if itype == 'int':
+                    # Dialog Handling?
+                    if len(matches) == 1:
+                      return CMDBCategoryValueInt(matches.pop().value)
+                    raise Exception("Expected one element but got multiple:",str(value))
+                elif itype == 'list_int':
+                    return CMDBCategoryValueListInt([ match.value for match in matches])
+                elif itype == 'double':
+                    if len(matches) == 1:
+                        return CMDBCategoryValueDouble(matches.pop().value)
+                elif itype == 'gps':
+                    if len(matches) == 1:
+                      return CMDBCategoryValueGPS(matches.pop().value)
+                    raise Exception("Expected one element but got multiple:",str(value))
+                elif itype == 'text':
+                    if len(matches) == 1:
+                      return CMDBCategoryValueText(matches.pop().value)
+                    raise Exception("Expected one element but got multiple:",str(value))
+                elif itype == 'list_text':
+                    if len(matches) >= 1:
+                        return [CMDBCategoryValueText(match.value) for match in matches]
+                    raise Exception("Expected one element but got multiple:",str(value))
+                elif itype == 'money':
+                    if len(matches) == 1:
+                      return CMDBCategoryValueMoney(matches.pop().value)
+                    raise exception("Expected one element but got multiple:",str(value))
+                elif itype == 'dialog':
+                    if len(matches) == 1:
+                      return CMDBCategoryValueDialog(matches.pop().value)
+                    raise exception("Expected one element but got multiple:",str(value))
+        return value_representation_factory_by_data_info(category.getFieldObject(key),value)
+
+def value_representation_factory_by_data_info(field_object, value=None):
     data_type = field_object['data']['type']
     info_type = field_object['info']['type']
     try:
