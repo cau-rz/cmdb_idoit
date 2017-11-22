@@ -94,7 +94,7 @@ def value_representation_factory(category,key,value = None):
                     if len(matches) == 1:
                       return CMDBCategoryValueDialog(matches.pop().value)
                     raise exception("Expected one element but got multiple:",str(value))
-        return value_representation_factory_by_data_info(category.getFieldObject(key),value)
+    return value_representation_factory_by_data_info(category.getFieldObject(key),value)
 
 def value_representation_factory_by_data_info(field_object, value=None):
     data_type = field_object['data']['type']
