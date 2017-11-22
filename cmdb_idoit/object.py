@@ -81,6 +81,21 @@ class CMDBObjects(list):
             if obj.id in result:
                 obj._fill_category_data(category_const, result[obj.id])
 
+    def loadAllCategoryData(self):
+        parameters = dict()
+        for obj in self:
+            categories = obj.getTypeCategories()
+            for category_const in categories:
+                parstr = "%s--%s" % (category_const,obj.id) 
+                parameters["%s--%s" % (category_const,obj.id)] = {'objID': obj.id, 'category': category_const}
+        result = multi_requests('cmdb.category', parameters)
+
+        for obj in self:
+            categories = obj.getTypeCategories()
+            for category_const in categories:
+                parstr = "%s--%s" % (category_const,obj.id) 
+                if parstr in result:
+                  obj._fill_category_data(category_const, result[parstr])
 
 class CMDBObject(dict):
     """
