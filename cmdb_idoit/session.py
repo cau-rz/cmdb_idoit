@@ -20,6 +20,7 @@ import configparser
 import os
 import logging
 import json
+import math
 
 
 url = None
@@ -109,6 +110,21 @@ def multi_requests(method, parameters):
     """
     if not type(parameters) is dict:
         raise TypeError('parameters not of type dict, but instead ', type(parameters))
+
+    """ 
+    When we have more requests than the idoit system can handle then
+    we split them up and merge the results.
+    """
+    max_parameters = 256
+    if len(parameters) > max_parameters:
+        length = len(parameters)
+        result = dict()
+        items = list(parameters.items())
+        for i in range(0,math.ceil(length / max_parameters)):
+          sub = dict(items[max_parameters * i:min(max_parameters * (i + 1),length)])
+          sub_result = multi_requests(method,sub)
+          result.update(sub_result)
+        return result
     
     payload = list()
     for key, parameter in parameters.items():
