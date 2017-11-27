@@ -260,42 +260,32 @@ class CMDBCategoryValues(dict):
     def __init__(self, category):
         self.id = None
         self.category = category
+        self.field_type = dict()
+        self.field_data = dict()
         self._field_up2date_state = dict()
         self.mark_updated(False)
+
+        for key in self.category.getFields():
+            self.field_type[key] = type_determination(self.category, key)
 
     def _fill_category_data(self, fields):
         self.id = fields['id']
         for key in self.category.getFields():
             try:
-                field_representation = value_representation_factory(self.category, key, fields[key])
-                dict.__setitem__(self, key, field_representation)
+                value = value_representation_factory(self.category, key, fields[key])
+                dict.__setitem__(self, key, value)
             except Exception as e:
                 raise Exception('Failed to create representation value for field %s in category %s' % (key, self.category.const), e)
 
     def __setitem__(self, index, value):
         if self.category.hasfield(index):
-            # Get type, value of field
-            field_representation = None
-            if index in self:
-                self._field_up2date_state[index] = self[index] == value
-                field_representation = dict.__getitem__(self, index)
-            else:
-                self._field_up2date_state[index] = False
-                field_representation = value_representation_factory(self.category, index)
-
-            field_representation.set(value)
-            dict.__setitem__(self, index, field_representation)
+            type_check(self.field_type[index],value)
+            dict.__setitem__(self, index, value)
         else:
             raise KeyError("Category " + self.category.const + " has no field " + index)
 
     def __getitem__(self, index):
-        field_data_type = self.category.get_field_data_type(index)
-        field_info_type = self.category.get_field_info_type(index)
-        if index in self:
-          field_representation = dict.__getitem__(self, index)
-          return field_representation.get()
-        else:
-            return None
+        return dict.__getitem__(self, index)
 
     def items(self):
         keys = dict.keys(self)
