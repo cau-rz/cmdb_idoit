@@ -213,6 +213,20 @@ class CMDBObject(dict):
         else:
             raise NotImplementedError()
 
+    def markUpdated(self):
+        """
+        Mark all fields in all loaded Categories as updated.
+        So we when save is called we will rewrite all data.
+        """
+        for category_const in self.getTypeCategories():
+            object_type = get_cmdb_type(self.type)
+            multi_value = object_type.get_category_inclusion(category_const).multi_value
+            if multi_value:
+                for field in self.fields[category_const]:
+                   field.mark_updated()
+            else:
+                self.fields[category_const].mark_updated()
+
     def save(self):
 
         is_create = self.id is None

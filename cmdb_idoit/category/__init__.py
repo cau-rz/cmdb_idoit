@@ -243,7 +243,8 @@ class CMDBCategoryValuesList(list):
             raise TypeError("CMDBCategoryValuesList works only with dict or CMDBCategoryValues, but not with %s" % type(value))
 
     def mark_updated(self, state=True):
-        pass
+        for value in self:
+            value.mark_updated(state)
 
     def has_updates(self):
         state = False
@@ -308,7 +309,7 @@ class CMDBCategoryValues(dict):
         to date.
         """
         for field in self.category.getFields():
-            self._field_up2date_state[field] = state
+            self._field_up2date_state[field] = not state
 
     def has_value_been_updated(self, key):
         return not self._field_up2date_state[key]
