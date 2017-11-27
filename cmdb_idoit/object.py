@@ -72,6 +72,10 @@ class CMDBObjects(list):
         return None
 
     def load_category_data(self, category_const):
+        logging.info("Deprication Warning: You should use loadCategoryData")
+        self.loadCategoryData(category_const)
+
+    def loadCategoryData(self, category_const):
         parameters = dict()
         for obj in self:
             parameters[obj.id] = {'objID': obj.id, 'category': category_const}
@@ -95,7 +99,8 @@ class CMDBObjects(list):
             for category_const in categories:
                 parstr = "%s--%s" % (category_const,obj.id) 
                 if parstr in result:
-                  obj._fill_category_data(category_const, result[parstr])
+                    obj._fill_category_data(category_const, result[parstr])
+
 
 def loadObject(ident):
     objects = CMDBObjects({'ids': [ident]})
@@ -135,8 +140,8 @@ class CMDBObject(dict):
         self.type = data['type']
 
         if fetchall:
-            for category_const in self.getTypeCategories():
-                self._fetch_category_data(category_const)
+            self.loadAllCategoryData()
+
 
     def loadAllCategoryData(self):
         categories = self.getTypeCategories()
@@ -151,7 +156,7 @@ class CMDBObject(dict):
     def _is_category_data_fetched(self, category_const):
         return self.field_data_fetched[category_const]
 
-    def _fetch_category_data(self, category_const):
+    def loadCategoryData(self, category_const):
         if category_const not in self.fields:
             raise Exception('Object has no category %s in his type %s' % (category_const, self.type_object.const))
         category_object = get_category(category_const)
@@ -202,7 +207,7 @@ class CMDBObject(dict):
     def __getitem__(self, key):
         # TODO: Fetch categorie data only at access time
         if not self._is_category_data_fetched(key) and self.id is not None:
-            self._fetch_category_data(key)
+            self.loadCategoryData(key)
         return self.fields[key]
 
     def __delitem__(self, category_const):
