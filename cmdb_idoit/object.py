@@ -235,6 +235,9 @@ class CMDBObject(dict):
         requests = dict()
 
         for category_const in self.getTypeCategories():
+            if category_const == 'C__CATG__LOGBOOK':
+                logging.info("Skip C__CATG__LOGBOOK")
+                continue
             category = get_category(category_const)
             pm_tpl = dict()
             pm_tpl['objID'] = self.id
