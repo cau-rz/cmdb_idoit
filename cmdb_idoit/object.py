@@ -179,12 +179,10 @@ class CMDBObject(dict):
             for fields in result:
                 entry = CMDBCategoryValues(category_object)
                 entry._fill_category_data(fields)
-                entry.mark_updated()
                 self.fields[category_const].append(entry)
         else:
             for fields in result:
                 self.fields[category_const]._fill_category_data(fields)
-            self.fields[category_const].mark_updated()
 
         self.is_up2date = True
         self.field_data_fetched[category_const] = True
@@ -304,7 +302,7 @@ class CMDBObject(dict):
                 parameter['data'] = dict()
                 parameter['data']['id'] = self.fields[category_const].id
                 for key, value in self.fields[category_const].items():
-                    if(self.fields[category_const].has_value_been_updated(key)):
+                    if self.fields[category_const].has_value_been_updated(key):
                         logging.debug("%s[%s](%s)=%s" % (category_const, key, category.get_field_data_type(key), str(value)))
                         parameter['data'][key] = value
                 if parameter['data']['id']:
@@ -312,7 +310,7 @@ class CMDBObject(dict):
                 else:
                     method = "cmdb.category.create"
                 requests[len(requests)] = {'method': method, 'parameter': parameter}
-                self.fields[category_const].mark_updated()
+                self.fields[category_const].mark_updated(False)
             else:
                 logging.debug("Category %s of Object %s has no updates skipping" % (category_const, self.id))
 

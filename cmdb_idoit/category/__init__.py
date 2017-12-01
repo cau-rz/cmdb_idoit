@@ -278,10 +278,19 @@ class CMDBCategoryValues(dict):
             except Exception as e:
                 raise Exception('Failed to create representation value for field %s in category %s' % (key, self.category.const), e)
 
+        # Since this method should only be callend on a loading process, remark all fields to be unchanged 
+        self.mark_updated(False)
+
     def __setitem__(self, index, value):
         if self.category.hasfield(index):
             type_check(self.field_type[index],value)
-            dict.__setitem__(self, index, value)
+            if dict.__contains__(self,index):
+               old_value = dict.__getitem__(self,index)
+            else:
+               old_value = None
+            if old_value != value:
+                self._field_up2date_state[index] = False
+                dict.__setitem__(self, index, value)
         else:
             raise KeyError("Category " + self.category.const + " has no field " + index)
 
