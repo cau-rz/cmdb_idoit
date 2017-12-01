@@ -67,6 +67,7 @@ def conver_money(value):
         try:
             #locale.setlocale( locale.LC_ALL, 'en_US.UTF-8') 
             money_value = value.split(' ')[0]
+            money_value.replace(",","")
             if len(money_value) == 0:
                 return float(0)
             else:
