@@ -115,5 +115,19 @@ def object_find(type,with_category=list()):
         for category in with_category:
             print(json.dumps(object[category], sort_keys=True, indent=4))
 
+@cli_obj.command("load")
+@click.option('-i','--load-object', help="id of requested object",required=True)
+@click.option('-c','--with-category',help="load values for category",multiple=True)
+def object_load(load_object,with_category=list()):
+    obj = cmdb.loadObject(load_object)
+    if obj is None:
+        print("Can't load object with id: %s" % load_object)
+    else:
+        print("object\t:",obj.id)
+        print("object\ttitle:",obj.title)
+        for category_const in with_category:
+            obj.loadCategoryData(category_const);
+            print(json.dumps(obj[category_const], sort_keys=True, indent=4))
+
 if __name__ == '__main__':
     cli()
