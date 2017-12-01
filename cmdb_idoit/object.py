@@ -104,7 +104,10 @@ class CMDBObjects(list):
 
 def loadObject(ident):
     objects = CMDBObjects({'ids': [ident]})
-    return objects.pop()
+    if len(objects) == 0:
+        return None
+    else:
+        return objects.pop()
 
 
 class CMDBObject(dict):
