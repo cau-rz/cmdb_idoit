@@ -15,12 +15,13 @@
     along with cmdb_idoit.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import requests
+from datetime import date, datetime
 import configparser
-import os
-import logging
 import json
+import logging
 import math
+import os
+import requests
 
 
 url = None
@@ -59,6 +60,13 @@ def init_session_from_config(instance='main'):
     session.verify = config[instance].get('verify',False)
     session.headers.update(headers)
 
+def __json_serial(obj):
+    """JSON serializer for objects not serializable by default json code"""
+
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    raise TypeError ("Type %s not serializable" % type(obj))
+
 
 def request(method, parameters):
     global url
@@ -75,8 +83,8 @@ def request(method, parameters):
         "method": method,
         "params": parameters,
         "version": "2.0"}
-    logging.debug('request:request_payload:' + json.dumps(payload, sort_keys=True, indent=4))
-    response = session.post(url, data=json.dumps(payload), stream=False)
+    logging.debug('request:request_payload:' + json.dumps(payload, sort_keys=True, indent=4,default=__json_serial))
+    response = session.post(url, data=json.dumps(payload,default=__json_serial), stream=False)
     session_stats['requests'] += 1
     session_stats['queries'] += 1
 
@@ -98,7 +106,7 @@ def request(method, parameters):
         logging.error(res_json['error'])
         raise Exception("Error(%i): %s" % (res_json['error']['code'], res_json['error']['message']))
 
-    logging.debug('result:' + json.dumps(res_json['result'], sort_keys=True, indent=4))
+    logging.debug('result:' + json.dumps(res_json['result'], sort_keys=True, indent=4,default=__json_serial))
     return res_json['result']
 
 
@@ -137,8 +145,8 @@ def multi_requests(method, parameters):
             "params": parameter,
             "version": "2.0"})
 
-    logging.debug('request_payload:' + json.dumps(payload, sort_keys=True, indent=4))
-    response = session.post(url, data=json.dumps(payload), stream=False)
+    logging.debug('request_payload:' + json.dumps(payload, sort_keys=True, indent=4,default=__json_serial))
+    response = session.post(url, data=json.dumps(payload,default=__json_serial), stream=False)
     session_stats['requests'] += 1
     session_stats['queries'] += len(payload)
 
@@ -160,7 +168,7 @@ def multi_requests(method, parameters):
         else:
             result[res_json['id']] = res_json['result']
 
-    logging.debug('result:' + json.dumps(result, sort_keys=True, indent=4))
+    logging.debug('result:' + json.dumps(result, sort_keys=True, indent=4,default=__json_serial))
     return result
 
 def multi_method_request(parameters):
@@ -187,8 +195,8 @@ def multi_method_request(parameters):
             "params": parameter,
             "version": "2.0"})
 
-    logging.debug('request_payload:' + json.dumps(payload, sort_keys=True, indent=4))
-    response = session.post(url, data=json.dumps(payload), stream=False)
+    logging.debug('request_payload:' + json.dumps(payload, sort_keys=True, indent=4,default=__json_serial))
+    response = session.post(url, data=json.dumps(payload,default=__json_serial), stream=False)
     session_stats['requests'] += 1
     session_stats['queries'] += len(payload)
 
@@ -218,5 +226,5 @@ def multi_method_request(parameters):
         else:
             result[res_json['id']] = res_json['result']
 
-    logging.debug('result:' + json.dumps(result, sort_keys=True, indent=4))
+    logging.debug('result:' + json.dumps(result, sort_keys=True, indent=4,default=__json_serial))
     return result
