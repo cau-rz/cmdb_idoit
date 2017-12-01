@@ -1,7 +1,7 @@
 C__CATG__ACCESS primary int $.value
 C__CATG__ACCESS type int $.id
 C__CATG__ACCOUNTING account int $.id
-C__CATG__ACCOUNTING contact int $[*].id
+C__CATG__ACCOUNTING contact list_int $[*].id # Attribut muss eine Liste von Integern sein, sollte aber laut Dokumentation ein int sein. (Eingereicht)
 C__CATG__ACCOUNTING cost_unit int $.id
 C__CATG__ACCOUNTING guarantee_period_base int $.id
 C__CATG__ACCOUNTING guarantee_period_unit int $.id
@@ -62,7 +62,8 @@ C__CATG__GROUP_MEMBERSHIPS connected_object int $.id
 C__CATG__GUEST_SYSTEMS connected_object int $.id
 C__CATG__GUEST_SYSTEMS hostname text $.title
 C__CATG__GUEST_SYSTEMS runs_on int $.id
-C__CATG__IMAGE image_selection text $.id # Attribut enthält keinen Integer, sollte aber
+C__CATG__IMAGE image text $.value # Attribut enthält mehrmals den selben String (Eingereicht)
+C__CATG__IMAGE image_selection text $.id # Attribut enthält keinen Integer, sollte aber (Eingereicht)
 C__CATG__IP active int $.value
 C__CATG__IP aliases list_int $[*].id
 C__CATG__IP assigned_port int $.id
@@ -321,8 +322,8 @@ C__CATG__VIRTUAL_MACHINE__ROOT system int $.id
 C__CATG__VIRTUAL_MACHINE__ROOT virtual_machine int $.id
 C__CATS__APPLICATION_ASSIGNED_OBJ application_priority int $.id
 C__CATS__APPLICATION_ASSIGNED_OBJ application_type int $.id
-C__CATS__APPLICATION_ASSIGNED_OBJ assigned_it_service int $[*].id
-C__CATS__APPLICATION_ASSIGNED_OBJ assigned_license int $[*].ref_id
+C__CATS__APPLICATION_ASSIGNED_OBJ assigned_it_service list_int $[*].id
+C__CATS__APPLICATION_ASSIGNED_OBJ assigned_license list_int $[*].ref_id
 C__CATS__APPLICATION_ASSIGNED_OBJ bequest_nagios_services int $.value
 C__CATS__APPLICATION_ASSIGNED_OBJ object int $.id
 C__CATS__CLIENT type int $.id
@@ -334,7 +335,7 @@ C__CATS__CONTRACT run_time_unit int $.id
 C__CATS__CONTRACT type int $.id
 C__CATS__CONTRACT_ALLOCATION assigned_object int $.id
 C__CATS__CONTRACT_INFORMATION contract_status int $.id
-C__CATS__CONTRACT_INFORMATION cost_calculation text $.id # Should be int but no field has none text
+C__CATS__CONTRACT_INFORMATION cost_calculation text $.id
 C__CATS__CONTRACT_INFORMATION end_type int $.id
 C__CATS__CONTRACT_INFORMATION reaction_rate int $.id
 C__CATS__CONTRACT_INFORMATION run_time_unit int $.id
