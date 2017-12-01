@@ -35,6 +35,8 @@ def conver_integer(value):
           return int(value)
         except ValueError:
             raise Exception("Can't convert %s to integer" % value,e)
+    elif isinstance(value,int):
+        return value
     else:
         raise Exception("Conversion of none string to integer is not supported '%s'" % repr(value))
 
