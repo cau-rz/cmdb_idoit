@@ -107,9 +107,9 @@ def type_check(type_desc,value):
         else:
             for element in value:
                 if not isinstance(element,type_desc[1]):
-                    raise Exception("type check error the inner elements of '%s' are not of type %s" % (value,type(type_desc[1])))
+                    raise Exception("type check error the inner elements of '%s' is of type and not of type %s" % (value,type(element),type(type_desc[1])))
     elif not isinstance(value,type_desc):
-        raise Exception("type check error '%s' are not of type %s" % (value,type(type_desc)))
+        raise Exception("type check error '%s' is of type %s and not of type %s" % (value,type(value),repr(type_desc)))
     return True
 
 
