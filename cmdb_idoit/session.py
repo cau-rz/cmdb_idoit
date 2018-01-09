@@ -159,6 +159,8 @@ def multi_requests(method, parameters):
         if not response.headers['content-type'] == 'application/json':
             raise Exception("Response has unexpected content-type: %s", response.headers['content-type'])
     res_jsons = response.json()
+    if res_jsons is None:
+        return dict()
 
     result = dict()
     for res_json in res_jsons:
