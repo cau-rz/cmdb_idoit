@@ -295,7 +295,13 @@ class CMDBCategoryValues(dict):
             raise KeyError("Category " + self.category.const + " has no field " + index)
 
     def __getitem__(self, index):
-        return dict.__getitem__(self, index)
+        try:
+            return dict.__getitem__(self, index)
+        except KeyError as e:
+            if self.category.hasfield(index):
+                return None
+            else:
+                raise e
 
     def items(self):
         keys = dict.keys(self)
