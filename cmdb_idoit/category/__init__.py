@@ -203,7 +203,6 @@ class CMDBCategoryValuesList(list):
     A model of a multi value category of an object.
     """
 
-
     def __init__(self, category):
         self.category = category
         self._field_up2date_state = dict()
@@ -224,6 +223,12 @@ class CMDBCategoryValuesList(list):
                 logging.debug("Add %s[%s] to deleted items" % (self.category.const,item.id))
                 self.deleted_items.append(item)
             list.__delitem__(self, index)
+
+    def remove(self, item):
+        if isinstance(item, CMDBCategoryValues) and item.id:
+            logging.debug("Add %s[%s] to deleted items" % (self.category.const,item.id))
+            self.deleted_items.append(item)
+        list.remove(self,item)
 
     def append(self, value):
         cat_value = self._dict_to_catval(value)
