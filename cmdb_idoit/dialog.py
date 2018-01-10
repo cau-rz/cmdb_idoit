@@ -35,8 +35,7 @@ class CMDBDialog:
     def __init__(self, category_const, field_name):
         self.category = category_const
         self.field = field_name
-        self.dialog_from_const = dict()
-        self.dialog_from_id = dict()
+        self.dialog_values = list()
         self._load()
 
     def _load(self):
@@ -49,8 +48,8 @@ class CMDBDialog:
             return
         else:
             for entry in result:
-                self.dialog_from_const[entry['const']] = entry
-                self.dialog_from_id[entry['id']] = entry
+                entry['id'] = int(entry['id'])
+                self.dialog_values.append(entry)
 
     def get_field_name(self):
         return self.field_name
@@ -59,10 +58,29 @@ class CMDBDialog:
         return self.category_const
 
     def get_dialog_from_const(self, dialog_const):
-        return self.dialog_from_const[dialog_const]
+        for entry in self.dialog_values:
+            if entry['const'] == dialog_const:
+                return entry
 
     def get_dialog_from_id(self, dialog_id):
-        return self.dialog_from_id[dialog_id]
+        for entry in self.dialog_values:
+            if entry['id'] == dialog_id:
+                return entry
+
+    def get_id_for_value(self, value):
+        for entry in self.dialog_values:
+            if entry['title'] == value:
+                return entry['id']
+        return None
+
 
     def values(self):
-        return self.dialog_from_const.values()
+        return self.dialog_values
+
+    def add(self, value):
+        if value not in [ x['title'] for x in self.dialog_values]:
+            result = request('cmdb.dialog.create', {'category': self.category, 'property': self.field, 'value': value})
+            if 'entry_id' in result:
+                self.dialog_values.append({ 'const': '', 'id': int(result['entry_id']), 'title': value})
+
+        
