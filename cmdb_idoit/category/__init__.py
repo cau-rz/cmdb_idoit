@@ -283,7 +283,11 @@ class CMDBCategoryValues(dict):
 
     def __setitem__(self, index, value):
         if self.category.hasfield(index):
-            type_check(self.field_type[index],value)
+            try:
+              type_check(self.field_type[index],value)
+            except Exception as e:
+                logging.error("Type check of index %s has failed" % index)
+                raise e
             if dict.__contains__(self,index):
                old_value = dict.__getitem__(self,index)
             else:
