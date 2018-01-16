@@ -23,10 +23,7 @@ Each object type is actually metadata and a set of subtypes, which we call categ
 There are three kinds of categories.
 
 .. autoclass:: cmdb_idoit.CMDBCategoryType 
-
-  .. attribute:: type_global
-  .. attribute:: type_specific
-  .. attribute:: type_custom
+  :members:
 
 .. autoclass:: cmdb_idoit.CMDBCategory
 
@@ -42,13 +39,6 @@ Object Instances
 
 .. autoclass:: cmdb_idoit.CMDBObject
    :members:
-   :inherited-members:
-
-   .. attribute:: id
-   .. attribute:: sys_id
-   .. attribute:: title
-   .. attribute:: status
-   .. attribute:: type
 
 .. autofunction:: cmdb_idoit.loadObject
 

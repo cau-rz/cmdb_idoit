@@ -49,11 +49,11 @@ cmdbCategoryCache = CMDBCategoryCache()
 
 class CMDBCategoryType(Enum):
     """
-    A enumeration of the types of categories.
+    An enum for the kind of categories.
     """
-    type_global = 1
-    type_specific = 2
-    type_custom = 3 
+    type_global = 1   #: Global category kind, this kind can be part of several object types.
+    type_specific = 2 #: Specific category kind, this kind of categories may be special to few or only one object types.
+    type_custom = 3   #: Custom category kind, this kind of categories are user defined and may be unique to a idoit instance.
 
 
 def get_category(category_const, category_id=None, category_type=CMDBCategoryType.type_specific):
@@ -80,6 +80,9 @@ def get_category(category_const, category_id=None, category_type=CMDBCategoryTyp
 
 
 def is_categorie_cached(category_const):
+    """
+    Check if the category is cached.
+    """
     return category_const in cmdbCategoryCache
 
 
@@ -158,21 +161,36 @@ class CMDBCategory(dict):
 
 
     def get_id(self):
+        """
+        Get the numerical identifier of a category.
+        """
         return self.id
 
     def get_const(self):
+        """
+        Get the category constant of a category.
+        """
         return self.const
 
     def hasfield(self, index):
+        """
+        Check if a category has a given field.
+        """
         return index in self.fields
 
     def getFields(self):
+        """
+        Return the list of fields of a category.
+        """
         return self.fields.keys()
 
     def getFieldObject(self,index):
+        """
+        Return the description for the given field as retrieved from the cmdb.
+        """
         return self.fields[index]
 
-    def getfield(self, index):
+    def getField(self, index):
         return self.fields[index]['data']['field']
 
     def get_field_data_type(self, index):
@@ -188,12 +206,21 @@ class CMDBCategory(dict):
         return self.fields[index]['info']['type']
 
     def is_global_category(self):
+        """
+        Check if this category is of global kind.
+        """
         return self.category_type == CMDBCategoryType.type_global
 
     def is_specific_category(self):
+        """
+        Check if this category is of specific kind.
+        """
         return self.category_type == CMDBCategoryType.type_specific
 
     def is_custom_category(self):
+        """
+        Check if this category is of custom kind.
+        """
         return self.category_type == CMDBCategoryType.type_custom
 
 
@@ -225,12 +252,18 @@ class CMDBCategoryValuesList(list):
             list.__delitem__(self, index)
 
     def remove(self, item):
+        """
+        Remove category instanciation from list.
+        """
         if isinstance(item, CMDBCategoryValues) and item.id:
             logging.debug("Add %s[%s] to deleted items" % (self.category.const,item.id))
             self.deleted_items.append(item)
         list.remove(self,item)
 
     def append(self, value):
+        """
+        Append an instanciation to the list.
+        """
         cat_value = self._dict_to_catval(value)
         list.append(self, cat_value)
 
@@ -248,10 +281,16 @@ class CMDBCategoryValuesList(list):
             raise TypeError("CMDBCategoryValuesList works only with dict or CMDBCategoryValues, but not with %s" % type(value))
 
     def mark_updated(self, state=True):
+        """
+        Change the update marker for all fields in all instanciations of the category.
+        """
         for value in self:
             value.mark_updated(state)
 
     def has_updates(self):
+        """
+        Check if any of the instanciations of the category has a field which is marked updated.
+        """
         state = False
         for value in self:
             state = state or value.has_updates()
