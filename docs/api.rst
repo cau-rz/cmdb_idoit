@@ -1,7 +1,23 @@
+.. _api:
+
 API
 ===
 
 This part of the documentation covers all the interfaces of cmdb_idoit.
+
+Session Handling
+----------------
+
+.. autofunction:: cmdb_idoit.init_session
+
+.. autofunction:: cmdb_idoit.init_session_from_config
+
+.. autofunction:: cmdb_idoit.request
+
+.. autofunction:: cmdb_idoit.multi_requests
+
+.. autofunction:: cmdb_idoit.multi_method_request
+
 
 Object Types
 ------------

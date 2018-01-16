@@ -36,6 +36,14 @@ session_stats = { 'requests': 0,
 
 
 def init_session(cmdb_url, cmdb_apikey, cmdb_username, cmdb_password):
+    """
+    Initialise session.
+
+    :param url cmdb_url: url to the json api
+    :param str cmdb_apikey: i-doit apikey
+    :param str cmdb_username: username for authentication
+    :param str cmdb_password: password for authentication
+    """
     global url, username, password, apikey, session
     url = cmdb_url
     username = cmdb_username
@@ -48,6 +56,11 @@ def init_session(cmdb_url, cmdb_apikey, cmdb_username, cmdb_password):
 
 
 def init_session_from_config(instance='main'):
+    """
+    Initialise session using a configured profile.
+
+    :param str instance: profile name, default is 'main'
+    """
     global url, username, password, apikey, session
     config = configparser.ConfigParser()
     config.read(['cmdbrc', os.path.expanduser('~/.cmdbrc')], encoding='utf8')
@@ -69,11 +82,11 @@ def __json_serial(obj):
 
 
 def request(method, parameters):
-    global url
     """
     Call a JSON RPC `method` with given `parameters`. Automagically handling authentication
     and error handling.
     """
+    global url
     if not type(parameters) is dict:
         raise TypeError('parameters not of type dict, but instead ', type(parameters))
 
@@ -111,11 +124,12 @@ def request(method, parameters):
 
 
 def multi_requests(method, parameters):
-    global url
     """
     Call a JSON RPC `method` with given `parameters`. Automagically handling authentication
     and error handling.
     """
+    global url
+
     if not type(parameters) is dict:
         raise TypeError('parameters not of type dict, but instead ', type(parameters))
 
@@ -174,11 +188,11 @@ def multi_requests(method, parameters):
     return result
 
 def multi_method_request(parameters):
-    global url
     """
     Call a JSON RPC `method` with given `parameters`. Automagically handling authentication
     and error handling.
     """
+    global url
     if not type(parameters) is dict:
         raise TypeError('parameters not of type dict, but instead ', type(parameters))
     
