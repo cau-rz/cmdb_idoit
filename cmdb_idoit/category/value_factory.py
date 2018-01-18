@@ -96,7 +96,7 @@ def type_determination(category,key):
     elif info_type == 'object_browser':
         return (list,base_type)
     elif info_type == 'multiselect':
-        return (list,basetype)
+        return (list,base_type)
 
     return base_type
 
