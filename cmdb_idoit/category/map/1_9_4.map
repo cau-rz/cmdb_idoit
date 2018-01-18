@@ -78,6 +78,7 @@ C__CATG__IP net int $.id
 C__CATG__IP net_type int $.id
 C__CATG__IP primary int $.value
 C__CATG__IP primary_hostaddress text $.ref_title
+C__CATG__IP search_domain list_int $[*].id
 C__CATG__IP use_standard_gateway int $.value
 C__CATG__ITS_LOGBOOK alert_level text $.title
 C__CATG__ITS_LOGBOOK event int $.id
