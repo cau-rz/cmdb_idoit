@@ -51,6 +51,8 @@ def conver_string(value):
 def conver_float(value):
     if value is None:
         return None
+    elif isinstance(value,int):
+        return float(value)
     elif isinstance(value,str):
         try:
             #locale.setlocale( locale.LC_ALL, 'en_US.UTF-8') 
@@ -58,7 +60,7 @@ def conver_float(value):
         except Exception as e:
             logging.warning("Can't covert %s to float" % value,e)
     else:
-        raise Exception("Conversion of none string to float is not supported '%s'" % repr(value))
+        raise Exception("Conversion of none string/int to float is not supported '%s'" % repr(value))
 
 def conver_money(value):
     if value is None:
