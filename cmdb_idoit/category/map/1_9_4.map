@@ -416,6 +416,7 @@ C__CMDB__SUBCAT__NETWORK_PORT port_type int $.id
 C__CMDB__SUBCAT__NETWORK_PORT relation_direction int $.id
 C__CMDB__SUBCAT__NETWORK_PORT speed_type int $.id
 C__CMDB__SUBCAT__NETWORK_PORT speed double $.title
+C__CMDB__SUBCAT__NETWORK_PORT layer2_assignment list_int $[*].id
 C__CMDB__SUBCAT__STORAGE__DEVICE capacity double $.title
 C__CMDB__SUBCAT__STORAGE__DEVICE connected int $.id
 C__CMDB__SUBCAT__STORAGE__DEVICE hotspare int $.value
