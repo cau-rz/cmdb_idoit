@@ -205,6 +205,12 @@ class CMDBCategory(dict):
         """
         return self.fields[index]['info']['type']
 
+    def getFieldType(self, index):
+        """
+        Return the type for a field, determinated by `cmdb_idoit.category.type_determination`.
+        """
+        return type_determination(self, index)
+
     def is_global_category(self):
         """
         Check if this category is of global kind.
