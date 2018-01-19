@@ -55,19 +55,28 @@ def list_object_types():
 def show_type_declaration(type_const):
   cmdb_type = cmdb.get_cmdb_type(type_const)
   cmdb_categories = cmdb_type.getCategories()
-  struct = dict()
+  print(type_const)
   for catconst in cmdb_categories:
     categorie = cmdb.get_category(catconst)
-    catstruct = dict()
-    for field in categorie.getFields():
-        catstruct[field] = "%s, %s" % (categorie.get_field_data_type(field),categorie.get_field_info_type(field))
     catinc = cmdb_type.get_category_inclusion(catconst)
-    if catinc.multi_value:
-        struct[catconst] = list([catstruct])
-    else:
-        struct[catconst] = catstruct
-  print(json.dumps(struct, sort_keys=True, indent=4))
+    _show_category_declaration(categorie,catinc.multi_value)
 
+#  C__CATS__SERVICE
+#    str description        mapped '$.id'
+#    str install_path 
+#    int installation       mapped '$.id'
+
+def _show_category_declaration(category, multi=False):
+    print("  %s"  % category.const, end="")
+    if multi:
+        print("  (list)",end="")
+    for field in category.getFields():
+        field_type = cmdb.category.type_repr(category.getFieldType(field))
+        field_map  = cmdb.category.get_type_mapping(category.const,field)
+        print("\n    (%s) %s" % (field_type,field),end="")
+        if field_map is not None:
+            print(" - mapped with %s" % field_map,end="")
+    print("\n")
 @cli.group("category")
 def cli_cat():
     pass
@@ -83,10 +92,7 @@ def show_category_declaration(category_const):
     if categorie is None:
         print("No category with name: %s" % category_const)
         return
-    catstruct = dict()
-    for field in categorie.getFields():
-        catstruct[field] = "%s, %s" % (categorie.get_field_data_type(field),categorie.get_field_info_type(field))
-    print(json.dumps(catstruct, sort_keys=True, indent=4))
+    _show_category_declaration(categorie)
 
 @cli_cat.command("dialog")
 @click.argument("category_const")
