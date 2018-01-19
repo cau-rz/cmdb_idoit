@@ -48,6 +48,22 @@ def _get_rules():
                 }
     return rules
 
+def get_type_mapping(category_const,field_name):
+    """
+    Get the type mapping for given category and field.
+    
+    :param str category_const: category constant
+    :param str field: Name of a field of given category
+
+    :rtype: str or None
+    """
+    rules = _get_rules()
+    if category_const in rules:
+        if field_name in rules[category_const]:
+            return rules[category_const][field_name]['path']
+    return None
+
+
 def type_determination(category,key):
 
     rules = _get_rules()
@@ -111,6 +127,18 @@ def type_check(type_desc,value):
     elif not isinstance(value,type_desc):
         raise Exception("type check error '%s' is of type %s and not of type %s" % (value,type(value),repr(type_desc)))
     return True
+
+
+def type_repr(type_desc):
+    """
+    Return a representation string of the type description.
+
+    :param str type_desc: The type description a representation string is generated for.
+    """
+    if isinstance(type_desc,tuple):
+        return "%s of %s" % (type_desc[0].__name__,type_repr(type_desc[1]))
+    else:
+        return type_desc.__name__
 
 
 def value_representation_factory(category,key,value = None):
