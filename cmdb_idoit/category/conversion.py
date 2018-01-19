@@ -21,15 +21,16 @@ import logging
 def conver_list(func,values):
     if values is None:
         return []
+    elif isinstance(values,list):
+        return [ func(value) for value in values ]
     else:
-        if isinstance(values,list):
-            return [ func(value) for value in values ]
-        else:
-            raise Exception("Expected value of type list, but instead it has type %s '%s'" % (type(values),repr(values)))
+        raise Exception("Expected value of type list, but instead it has type %s '%s'" % (type(values),repr(values)))
 
 def conver_integer(value):
     if value is None:
         return None
+    elif isinstance(value,int):
+        return value
     elif isinstance(value,str):
         try:
           return int(value)
@@ -51,6 +52,8 @@ def conver_string(value):
 def conver_float(value):
     if value is None:
         return None
+    elif isinstance(value,float):
+        return value
     elif isinstance(value,int):
         return float(value)
     elif isinstance(value,str):
@@ -65,6 +68,8 @@ def conver_float(value):
 def conver_money(value):
     if value is None:
         return None
+    elif isinstance(value,float):
+        return value
     elif isinstance(value,str):
         try:
             #locale.setlocale( locale.LC_ALL, 'en_US.UTF-8') 
