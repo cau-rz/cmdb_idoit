@@ -27,9 +27,6 @@ import json
 @click.option('--profile',help='Profile to use',default='main')
 @click.option('--debug/--no-debug',default=False)
 def cli(profile,debug):
-    # Load credentials
-    cmdb.init_session_from_config(profile)
-    
     if debug:
         # We want some informations
         logging.basicConfig(level=logging.DEBUG)
@@ -37,6 +34,8 @@ def cli(profile,debug):
         # Not so much informations
         logging.basicConfig(level=logging.INFO)
 
+    # Load credentials
+    cmdb.init_session_from_config(profile)
 
 @cli.group("type")
 def cli_type():
