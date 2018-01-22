@@ -343,6 +343,7 @@ C__CATS__CONTRACT_INFORMATION run_time_unit int $.id
 C__CATS__CONTRACT_INFORMATION type int $.id
 C__CATS__GROUP object int $.id
 C__CATS__LAYER2_NET ip_helper_addresses list_text $[*].ip
+C__CATS__LAYER2_NET layer3_assignments list_int $[*].id
 C__CATS__LAYER2_NET standard int $.value
 C__CATS__LAYER2_NET subtype int $.id
 C__CATS__LAYER2_NET type int $.id
