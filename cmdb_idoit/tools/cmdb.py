@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 
+#!/usr/bin/env python3
 """
     This file is part of cmdb_idoit.
 
@@ -63,7 +63,7 @@ def show_type_declaration(type_const):
 
 #  C__CATS__SERVICE
 #    str description        mapped '$.id'
-#    str install_path 
+#    str install_path
 #    int installation       mapped '$.id'
 
 def _show_category_declaration(category, multi=False):
@@ -133,6 +133,26 @@ def object_load(load_object,with_category=list()):
         for category_const in with_category:
             obj.loadCategoryData(category_const);
             print(json.dumps(obj[category_const], sort_keys=True, indent=4))
+
+@cli.command("run")
+@click.argument("filename")
+def run_queries(filename):
+    with open(filename,'r') as f:
+        rq = json.load(f)
+        if isinstance(rq,dict):
+            result = cmdb.multi_method_request(rq)
+            print("Request:")
+            print(json.dumps(rq, sort_keys=True, indent=4))
+            print("Result:")
+            print(json.dumps(result, sort_keys=True, indent=4))
+        elif isinstance(rq,list):
+            for r in rq:
+                result = cmdb.multi_method_request(r)
+                print("Request:")
+                print(json.dumps(r, sort_keys=True, indent=4))
+                print("Result:")
+                print(json.dumps(result, sort_keys=True, indent=4))
+
 
 if __name__ == '__main__':
     cli()
