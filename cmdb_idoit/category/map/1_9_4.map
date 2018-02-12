@@ -41,6 +41,7 @@ C__CATG__CONTACT primary int $.value
 C__CATG__CONTACT role int $.id
 C__CATG__CONTRACT_ASSIGNMENT connected_contract int $.id
 C__CATG__CONTROLLER type int $.id
+C__CATG__CPU frequency double $.title
 C__CATG__CPU frequency_unit int $.id
 C__CATG__CPU manufacturer int $.id
 C__CATG__CPU type int $.id
