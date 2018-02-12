@@ -357,6 +357,7 @@ C__CATS__NET gateway int $.id
 C__CATS__NET layer2_assignments list_int $[*].id
 C__CATS__NET type int $.id
 C__CATS__NET_DHCP type int $.id
+C__CATS__NET dns_domain  list_int $[*].id
 C__CATS__NET_IP_ADDRESSES assigned_object int $.id
 C__CATS__NET_IP_ADDRESSES ipv4_assignment int $.id
 C__CATS__NET_IP_ADDRESSES ipv6_assignment int $.id
