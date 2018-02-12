@@ -106,6 +106,7 @@ C__CATG__LOGBOOK user int $.id
 C__CATG__MAIL_ADDRESSES primary int $.id
 C__CATG__MAIL_ADDRESSES primary int $.value
 C__CATG__MANUAL manual int $.id
+C__CATG__MEMORT capacity double $.title
 C__CATG__MEMORY manufacturer int $.id
 C__CATG__MEMORY title int $.id
 C__CATG__MEMORY type int $.id
