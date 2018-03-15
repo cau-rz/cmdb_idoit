@@ -118,6 +118,6 @@ def conver_gps(value):
     elif isinstance(value,dict):
         latitude = value['latitude']
         longitude = value['longitude']
-        return {'latitude': self.latitude, 'longitude': self.longitude }
+        return {'latitude': latitude, 'longitude': longitude }
     else:
         raise Exception("Value is not of type dict, but instead of type %s '%s'" % (type(value),repr(value)))
