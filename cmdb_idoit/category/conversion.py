@@ -63,7 +63,7 @@ def conver_float(value):
         except Exception as e:
             logging.warning("Can't covert %s to float" % value,e)
     else:
-        raise Exception("Conversion of none string/int to float is not supported '%s'" % repr(value))
+        raise Exception("Conversion of none string/int (%s) to float is not supported '%s'" % (type(value),repr(value)))
 
 def conver_money(value):
     if value is None:
