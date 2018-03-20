@@ -16,6 +16,7 @@
 """
 
 from enum import Enum
+import textwrap
 
 from cmdb_idoit.session import *
 from cmdb_idoit.category.value_factory import *
@@ -325,8 +326,18 @@ class CMDBCategoryValues(dict):
             try:
                 value = value_representation_factory(self.category, key, fields[key])
                 dict.__setitem__(self, key, value)
-            except Exception as e:
-                raise Exception('Failed to create representation value for field %s in category %s' % (key, self.category.const), e)
+            except ConversionException as e:
+                logging.fatal(textwrap.dedent("""\
+                              There was a fatal error while deriving a representativ value for %(category)s.%(attribute)s.
+                              According to the API the type of this attribute is '%(type)s', but it was not possible to 
+                              derive this type from the received data:
+ 
+                              %(data)s
+
+                              Either we do something ugly wrong or a mapping for this attribute is needed.
+                              For more information consult the mitigation chapter in the documentation.""" 
+                              % { 'category': self.category.const, 'attribute': key, 'data': repr(fields[key]),'type': type_repr(self.field_type[key])}))
+                raise Exception(e)
 
         # Since this method should only be callend on a loading process, remark all fields to be unchanged 
         self.mark_updated(False)
