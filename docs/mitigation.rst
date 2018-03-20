@@ -10,6 +10,35 @@ Fixing data structures
 See `cmdb_idoit.category.value_factory.type_determination`, which basically 
 processes queried data structures by a set of rules from `cmdb_idoit.category.map`.
 
+When the determined type of an attribute of a category is not derivable from the
+received data, you will see some critical error like below:
+
+:: 
+
+  CRITICAL:root:There was a fatal error while deriving a representativ value for C__CATG__CONTACT.contact.
+  According to the API the type of this attribute is 'int', but it was not possible to
+  derive this type from the received data:
+
+  [{'phone': '..', 'ldap_group': '', 'sysid': '..' 'title': '..', 'type': 'C__OBJTYPE__PERSON_GROUP', 'email_address': '..', 'id': '1234', 'right_group': '0'}]
+
+  Either we do something ugly wrong or a mapping for this attribute is needed.
+  For more information consult the mitigation chapter in the documentation.
+
+
+For fixing this kind of error we need to create a mapping.
+
+Type Mappings
+.............
+
+A type mapping is a entry consisting of the category constant, the name of the attribute,
+the type which should be derived and a jsonpath-ng expression. The mapping for the above
+error example would be:
+
+::
+
+  C__CATG__CONTACT contact int $[*].id
+
+
 Fixing type values
 ------------------
 
@@ -20,6 +49,7 @@ type, which is done by `cmdb_idoit.category.value_factory.type_check`.
 But the main work for converting the values themself is done by a set
 of conversion functions living in `cmdb_idoit.category.conversion`.
 
+
 API
 ...
 
@@ -28,3 +58,7 @@ API
 .. autofunction:: cmdb_idoit.category.value_factory.type_determination
 
 .. autofunction:: cmdb_idoit.category.value_factory.type_check
+
+.. autofunction:: cmdb_idoit.category.value_factory.type_repr
+
+.. autofunction:: cmdb_idoit.category.value_factory.get_type_mapping
