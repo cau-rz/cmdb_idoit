@@ -100,9 +100,53 @@ you have to load that object, it may have any possible object type.
 Change an object
 ----------------
 
+Every object has a :py:attr:`cmdb_idoit.CMDBObject.title` which can be manipulated without loading any further
+category data.
+
 ::
 
   someserver = servers.pop()
   someserver.title = "Some new Title"
   someserver.save()
 
+We can of course manipulate other data, too.
+
+::
+
+  someserver['C__CATG__GLOBAL']['title'] = "New Title"
+  someserver.save()
+
+
+The above example will, save the new value. Even if you have not loaded the
+category data for ``C__CATG__GLOBAL``.
+
+Dealing with Dialogs
+--------------------
+
+Many values in the i-doit web interface are predefined lists of selectable values, so called dialogs, 
+e.g. the room type. In the API those attributes are represented as :py:class:`int`. You can either
+define needed values in the Web Interface and view their :py:class:`int` representation with the 
+:ref:`commandline` utility or you define them in code and use the defined value directly.
+
+::
+
+  cmdb_status = cmdb.CMDBDialog('C__CATG__GLOBAL','cmdb_status')
+  cmdb_status_planned = cmdb_status.get_dialog_from_const('C__CMDB_STATUS__PLANNED')
+
+This example loads the dialog values for ``C__CATG__GLOBAL.cmdb_status`` and stores the value 
+for the planned state into a local variable. The above variant is more language save than the
+code below, but the code below allows definition of dialog values in code. At the time of this
+writing there is no way to define constants for values like used above, you have to predefine
+them in the web interface.
+
+:: 
+  
+  cmdb_status_timetravel_value = "Wibbly Wobbly Timey Wimey"
+  cmdb_status.add(cmdb_status_timetravel_value)
+  cmdb_status_timetravel = cmdb_status.get_dialog_from_value(cmdb_status_timetravel_value)
+
+  someserver['C__CATG__GLOBAL']['cmdb_status'] = cmdb_status_timetravel
+  someserver.save()
+
+The CMDBDialog object is aware of the available values, so readding them every time you run the
+code will not add them again. As long as you do not change the value.

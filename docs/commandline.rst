@@ -46,3 +46,18 @@ When accessing types you also need to know about the structure of the type.
 ::
 
     $ cmdb type declaration C__OBJTYPE__SERVICE
+
+
+Dialog value definition
+-----------------------
+
+The know the available values and constants for a dialog attibute, you can list them:
+
+::
+
+    $ cmdb category dialog C__CATG__GLOBAL cmdb_status
+    Id	Constant		Title
+    1	C__CMDB_STATUS__PLANNED		planned
+    2	C__CMDB_STATUS__ORDERED		ordered
+    3	C__CMDB_STATUS__DELIVERED		delivered
+    4	C__CMDB_STATUS__ASSEMBLED		assembled
