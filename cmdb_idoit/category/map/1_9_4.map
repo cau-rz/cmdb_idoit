@@ -283,7 +283,7 @@ C__CATG__OPERATING_SYSTEM application_priority int $.id
 C__CATG__OPERATING_SYSTEM application_type int $.id
 C__CATG__OPERATING_SYSTEM assigned_it_service list_int $[*].id
 C__CATG__OPERATING_SYSTEM assigned_license list_int $[*].id
-C__CATG__OPERATING_SYSTEM assigned_version int $.id
+C__CATG__OPERATING_SYSTEM assigned_version int $.ref_id
 C__CATG__POWER_CONSUMER active int $.value
 C__CATG__POWER_CONSUMER manufacturer int $.id
 C__CATG__POWER_CONSUMER model int $.id
