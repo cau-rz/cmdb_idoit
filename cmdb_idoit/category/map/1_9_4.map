@@ -430,3 +430,4 @@ C__CMDB__SUBCAT__STORAGE__DEVICE lto_type int $.id
 C__CMDB__SUBCAT__STORAGE__DEVICE raid_group int $.id
 C__CMDB__SUBCAT__STORAGE__DEVICE type int $.id
 C__CMDB__SUBCAT__STORAGE__DEVICE unit int $.id
+C__CATG__IDENTIFIER type int $.id
