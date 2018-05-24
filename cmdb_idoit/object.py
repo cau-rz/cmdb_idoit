@@ -179,6 +179,11 @@ class CMDBObject(dict):
         """
         Fetch all avilable categories for this object.
         """
+
+        # If this object is unsaved, we are not able to receive anything but an error, so skip.
+        if self.id == None:
+            return
+
         categories = self.getTypeCategories()
         parameters = dict()
         for category_const in categories:
@@ -198,6 +203,11 @@ class CMDBObject(dict):
         :param category_const: The category constant for the to load category.
         :raise Exception: if the given category does not exist in the object type declaration.
         """
+
+        # If this object is unsaved, we are not able to receive anything but an error, so skip.
+        if self.id == None:
+            return
+
         if category_const not in self.fields:
             raise Exception('Object has no category %s in his type %s' % (category_const, self.type_object.const))
         category_object = get_category(category_const)
