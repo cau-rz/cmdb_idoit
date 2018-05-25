@@ -86,8 +86,8 @@ class CMDBObjects(list):
 
     def findObjectsByFunction(self, function):
         """
-        Find all object for that `function` is true.
-        And return that list. Returns an empty list if no object is found.
+        Find all object for that `function` is true, 
+        return that list. Returns an empty list if no object is found.
         """
         return list(filter(function,self))
 
