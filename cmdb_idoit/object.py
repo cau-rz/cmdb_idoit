@@ -84,6 +84,13 @@ class CMDBObjects(list):
                     return cmdb_object
         return None
 
+    def findObjectsByFunction(self, function):
+        """
+        Find all object for that `function` is true.
+        And return that list. Returns an empty list if no object is found.
+        """
+        return list(filter(function,self))
+
     def load_category_data(self, category_const):
         logging.info("Deprication Warning: You should use loadCategoryData")
         self.loadCategoryData(category_const)
