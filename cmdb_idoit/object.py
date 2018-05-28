@@ -95,13 +95,16 @@ class CMDBObjects(list):
         logging.info("Deprication Warning: You should use loadCategoryData")
         self.loadCategoryData(category_const)
 
-    def loadCategoryData(self, category_const):
+    def loadCategoryData(self, category_const,reload=False):
         """
         Fetch category data for all contained objects.
         """
         parameters = dict()
         for obj in self:
-            parameters[obj.id] = {'objID': obj.id, 'category': category_const}
+            # Check if the category data has already been fetched on the object
+            # TODO Provide an method which encapsulates the internal data structure
+            if not obj.field_data_fetched[category_const] or reload:
+                parameters[obj.id] = {'objID': obj.id, 'category': category_const}
         result = multi_requests('cmdb.category', parameters)
 
         for obj in self:
@@ -215,11 +218,11 @@ class CMDBObject(dict):
         if self.id == None:
             return
 
-        # TODO Add additional cachability, so we can call this several times without the network overhead
         if category_const not in self.fields:
             raise Exception('Object has no category %s in his type %s' % (category_const, self.type_object.const))
         category_object = get_category(category_const)
 
+        # Check if the category data has already been fetched
         if self.field_data_fetched[category_const] and not reload:
             return
 
