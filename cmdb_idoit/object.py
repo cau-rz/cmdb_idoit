@@ -203,7 +203,7 @@ class CMDBObject(dict):
     def _is_category_data_fetched(self, category_const):
         return self.field_data_fetched[category_const]
 
-    def loadCategoryData(self, category_const):
+    def loadCategoryData(self, category_const, reload=False):
         """
         Fetch the category data for the given category.
 
@@ -215,9 +215,13 @@ class CMDBObject(dict):
         if self.id == None:
             return
 
+        # TODO Add additional cachability, so we can call this several times without the network overhead
         if category_const not in self.fields:
             raise Exception('Object has no category %s in his type %s' % (category_const, self.type_object.const))
         category_object = get_category(category_const)
+
+        if self.field_data_fetched[category_const] and not reload:
+            return
 
         result = request('cmdb.category', {'objID': self.id, 'category': category_const})
         self._fill_category_data(category_const, result, category_object)
