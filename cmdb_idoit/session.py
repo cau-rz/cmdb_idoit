@@ -133,7 +133,7 @@ def multi_requests(method, parameters):
     if not type(parameters) is dict:
         raise TypeError('parameters not of type dict, but instead ', type(parameters))
 
-    if len(parameter) == 0:
+    if len(parameters) == 0:
         return {}
     """
     When we have more requests than the idoit system can handle then
