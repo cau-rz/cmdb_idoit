@@ -139,7 +139,7 @@ def multi_requests(method, parameters):
     When we have more requests than the idoit system can handle then
     we split them up and merge the results.
     """
-    max_parameters = 256
+    max_parameters = 512
     if len(parameters) > max_parameters:
         length = len(parameters)
         result = dict()
