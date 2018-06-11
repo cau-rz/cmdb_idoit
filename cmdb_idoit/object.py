@@ -54,8 +54,8 @@ class CMDBObjects(list):
         Search and return an object by id.
         Return None if none is found.
         """
-        if isinstance(id, int):
-            id = str(id)
+        if isinstance(id, str):
+            id = int(id)
         for obj in self:
             if obj.id == id:
                 return obj
@@ -176,7 +176,7 @@ class CMDBObject(collections.abc.Mapping):
 
         # Handle object data
         if isinstance(object_data, collections.abc.Mapping):
-            self.id = data['id']
+            self.id = int(data['id'])
             self.sys_id = data['sysid']
             self.title = data['title']
             self.status = data['status']
