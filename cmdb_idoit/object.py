@@ -30,7 +30,7 @@ class CMDBObjects(list):
     :ivar dict filters: Given filter for this object list.
     """
 
-    def __init__(self, filters=None, limit = 0):
+    def __init__(self, filters=None, limit=0):
         """
         :param dict filters: Definition of the objects list filter.
         :param int limit: Number of objects which should be loaded.
@@ -42,12 +42,11 @@ class CMDBObjects(list):
 
         parameter = {'filter': self.filters}
         if limit != 0:
-            parameter['limit'] = limit;
+            parameter['limit'] = limit
 
         result = request('cmdb.objects', {'filter': self.filters})
         for raw_object in result:
-            cmdb_object = CMDBObject(raw_object['type'])
-            cmdb_object.fill(raw_object)
+            cmdb_object = CMDBObject(raw_object)
             self.append(cmdb_object)
 
     def find_object_by_id(self, id):
@@ -55,7 +54,7 @@ class CMDBObjects(list):
         Search and return an object by id.
         Return None if none is found.
         """
-        if isinstance(id,int):
+        if isinstance(id, int):
             id = str(id)
         for obj in self:
             if obj.id == id:
@@ -91,16 +90,16 @@ class CMDBObjects(list):
 
     def findObjectsByFunction(self, function):
         """
-        Find all object for that `function` is true, 
+        Find all object for that `function` is true,
         return that list. Returns an empty list if no object is found.
         """
-        return list(filter(function,self))
+        return list(filter(function, self))
 
     def load_category_data(self, category_const):
         logging.info("Deprication Warning: You should use loadCategoryData")
         self.loadCategoryData(category_const)
 
-    def loadCategoryData(self, category_const,reload=False):
+    def loadCategoryData(self, category_const, reload=False):
         """
         Fetch category data for all contained objects.
         """
@@ -127,14 +126,14 @@ class CMDBObjects(list):
         for obj in self:
             categories = obj.getTypeCategories()
             for category_const in categories:
-                parstr = "%s--%s" % (category_const,obj.id) 
-                parameters["%s--%s" % (category_const,obj.id)] = {'objID': obj.id, 'category': category_const}
+                parstr = "%s--%s" % (category_const, obj.id)
+                parameters["%s--%s" % (category_const, obj.id)] = {'objID': obj.id, 'category': category_const}
         result = multi_requests('cmdb.category', parameters)
 
         for obj in self:
             categories = obj.getTypeCategories()
             for category_const in categories:
-                parstr = "%s--%s" % (category_const,obj.id) 
+                parstr = "%s--%s" % (category_const, obj.id)
                 if parstr in result:
                     obj._fill_category_data(category_const, result[parstr])
 
@@ -153,45 +152,49 @@ def loadObject(ident):
 class CMDBObject(collections.abc.Mapping):
     """
     An cmdb object. Is basically a dictionary of the categories which
-    are defined in its object type. 
+    are defined in its object type.
 
     :var int id: The numerical ident for this object.
-    :var str sys_id: The cmdb internal system identifier 
+    :var str sys_id: The cmdb internal system identifier
     :var str title: The title of the object.
     :var int type_id: The numerical type ident for this object.
     :var bool is_up2date: Has this object been changed.
     """
 
-    def __init__(self, type_id):
+    def __init__(self, object_data, fetch_all=False):
+
+        # Attributes of an object
         self.id = None
-        self.sys_id = None 
-        self.title = None         
-        self.type = type_id
+        self.sys_id = None
+        self.title = None
+        self.type = None
         self.is_up2date = False
 
         # Fields contains the structure of the object rebuild with CMDBCategoryValues and CMDBCategoryValuesList Objects
         self.fields = None
         self.field_data_fetched = dict()
 
-        self.__fetchtype__()
+        # Handle object data
+        if isinstance(object_data, collections.abc.Mapping):
+            self.id = data['id']
+            self.sys_id = data['sysid']
+            self.title = data['title']
+            self.status = data['status']
+            self.type = data['type']
+        else:
+            self.type = object_data
 
-    def __fetchtype__(self):
+        # Fetch type information
         self.type_object = get_cmdb_type(self.type)
         self.fields = self.type_object.getObjectStructure()
-
-        for category_const in self.getTypeCategories():
-            self.field_data_fetched[category_const] = False
-
-    def fill(self, data, fetchall=False):
-        self.id = data['id']
-        self.sys_id = data['sysid']
-        self.title = data['title']
-        self.status = data['status']
-        self.type = data['type']
+        self._reset_fetch_state()
 
         if fetchall:
             self.loadAllCategoryData()
 
+    def _reset_fetch_state(self):
+        for category_const in self.getTypeCategories():
+            self.field_data_fetched[category_const] = False
 
     def loadAllCategoryData(self):
         """
@@ -199,7 +202,7 @@ class CMDBObject(collections.abc.Mapping):
         """
 
         # If this object is unsaved, we are not able to receive anything but an error, so skip.
-        if self.id == None:
+        if self.id is None:
             return
 
         categories = self.getTypeCategories()
@@ -209,7 +212,7 @@ class CMDBObject(collections.abc.Mapping):
         result = multi_requests('cmdb.category', parameters)
         for category_const in result:
             if len(result[category_const]) > 0:
-                self._fill_category_data(category_const,result[category_const])
+                self._fill_category_data(category_const, result[category_const])
 
     def _is_category_data_fetched(self, category_const):
         return self.field_data_fetched[category_const]
@@ -223,7 +226,7 @@ class CMDBObject(collections.abc.Mapping):
         """
 
         # If this object is unsaved, we are not able to receive anything but an error, so skip.
-        if self.id == None:
+        if self.id is None:
             return
 
         if category_const not in self.fields:
@@ -310,7 +313,7 @@ class CMDBObject(collections.abc.Mapping):
             multi_value = object_type.get_category_inclusion(category_const).multi_value
             if multi_value:
                 for field in self.fields[category_const]:
-                   field.mark_updated()
+                    field.mark_updated()
             else:
                 self.fields[category_const].mark_updated()
 
@@ -339,7 +342,7 @@ class CMDBObject(collections.abc.Mapping):
 
         if is_create:
             self.id = result['id']
-        
+
         requests = dict()
 
         for category_const in self.getTypeCategories():
@@ -358,7 +361,7 @@ class CMDBObject(collections.abc.Mapping):
             # Skip this category iff we are not creating and field is not fetched
             if not is_create and not self._is_category_data_fetched(category_const):
                 continue
-            
+
             if multi_value:
                 for field in self.fields[category_const]:
                     if field.has_updates():
@@ -374,7 +377,7 @@ class CMDBObject(collections.abc.Mapping):
                             parameter['data']['id'] = field.id
                         else:
                             method = "cmdb.category.create"
-                        requests[len(requests)] = {'method':method, 'parameter': parameter}
+                        requests[len(requests)] = {'method': method, 'parameter': parameter}
                         field.mark_updated()
                     else:
                         logging.debug("Category %s/%s of Object %s has no updates skipping" % (category_const, field.id, self.id))
@@ -384,7 +387,7 @@ class CMDBObject(collections.abc.Mapping):
                         logging.debug("Delete %s[%s]" % (category_const, str(field.id)))
                         method = "cmdb.category.delete"
                         parameter['id'] = field.id
-                        requests[len(requests)] = {'method':"cmdb.category.delete", 'parameter': parameter}
+                        requests[len(requests)] = {'method': "cmdb.category.delete", 'parameter': parameter}
             elif self.fields[category_const].has_updates():
                 parameter = pm_tpl.copy()
                 parameter['data'] = dict()
