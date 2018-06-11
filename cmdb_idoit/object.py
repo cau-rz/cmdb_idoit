@@ -28,12 +28,15 @@ class CMDBObjects(list):
     :ivar dict filters: Given filter for this object list.
     """
 
-    def __init__(self, filters=dict(),limit = 0):
+    def __init__(self, filters=None, limit = 0):
         """
         :param dict filters: Definition of the objects list filter.
         :param int limit: Number of objects which should be loaded.
         """
-        self.filters = filters
+        if filters is None:
+            self.filters = dict()
+        else:
+            self.filters = filters
 
         parameter = {'filter': self.filters}
         if limit != 0:
