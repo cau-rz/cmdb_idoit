@@ -19,6 +19,8 @@ from .session import *
 from .category import *
 from .type import *
 
+import collections.abc
+
 
 class CMDBObjects(list):
     """
@@ -148,7 +150,7 @@ def loadObject(ident):
         return objects.pop()
 
 
-class CMDBObject(dict):
+class CMDBObject(collections.abc.Mapping):
     """
     An cmdb object. Is basically a dictionary of the categories which
     are defined in its object type. 
@@ -278,9 +280,6 @@ class CMDBObject(dict):
     def __repr__(self):
         return repr({'id': self.id, 'type': self.type, 'title': self.title, 'values': self.fields})
 
-    def __setitem__(self, key, value):
-        raise Exception('You can\'t create new categories, without manipulating the type directly.')
-
     def __getitem__(self, key):
         # TODO: Fetch categorie data only at access time
         if not self._is_category_data_fetched(key) and self.id is not None:
@@ -294,6 +293,12 @@ class CMDBObject(dict):
                 del self.fields[category_const]
         else:
             raise NotImplementedError()
+
+    def __len__(self):
+        return len(self.fields)
+
+    def __iter__(self):
+        return self.fields.__iter__()
 
     def markUpdated(self):
         """
