@@ -149,7 +149,8 @@ def multi_requests(method, parameters):
           sub_result = multi_requests(method,sub)
           result.update(sub_result)
         return result
-    
+
+
     payload = list()
     for key, parameter in parameters.items():
         if not type(parameter) is dict:
@@ -191,13 +192,19 @@ def multi_requests(method, parameters):
 
 def multi_method_request(parameters):
     """
-    Call a JSON RPC `method` with given `parameters`. Automagically handling authentication
-    and error handling.
+    Sequentially handle multiple requests.
+
+    Keys of the given :py:class:`dict` are used as identifier, values should contain
+    a :py:class:`dict` with contain at least a 'parameter' and a 'method' key.
+
+    :param dict parameters: requests
+
+    :rtype: dict
     """
     global url
     if not type(parameters) is dict:
         raise TypeError('parameters not of type dict, but instead ', type(parameters))
-    
+
     if len(parameters) == 0:
         return {}
 
