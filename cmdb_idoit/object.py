@@ -103,8 +103,9 @@ class CMDBObjects(list):
         for obj in self:
             # Check if the category data has already been fetched on the object
             # TODO Provide an method which encapsulates the internal data structure
-            if not obj.field_data_fetched[category_const] or reload:
-                parameters[obj.id] = {'objID': obj.id, 'category': category_const}
+            if obj.hasTypeCategory(category_const):
+                if not obj.field_data_fetched[category_const] or reload:
+                    parameters[obj.id] = {'objID': obj.id, 'category': category_const}
         result = multi_requests('cmdb.category', parameters)
 
         for obj in self:
@@ -248,6 +249,9 @@ class CMDBObject(dict):
 
         self.is_up2date = True
         self.field_data_fetched[category_const] = True
+
+    def hasTypeCategory(self, category_const):
+        return category_const in self.object.getCategories()
 
     def getTypeCategories(self):
         """
