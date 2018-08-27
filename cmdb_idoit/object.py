@@ -106,6 +106,8 @@ class CMDBObjects(list):
             if obj.hasTypeCategory(category_const):
                 if not obj.field_data_fetched[category_const] or reload:
                     parameters[obj.id] = {'objID': obj.id, 'category': category_const}
+        if len(parameters) == 0:
+            logging.warning("Loading category data '%s' on set result in no action" % category_const)
         result = multi_requests('cmdb.category', parameters)
 
         for obj in self:
