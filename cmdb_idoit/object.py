@@ -253,7 +253,7 @@ class CMDBObject(dict):
         self.field_data_fetched[category_const] = True
 
     def hasTypeCategory(self, category_const):
-        return category_const in self.object.getCategories()
+        return category_const in self.type_object.getCategories()
 
     def getTypeCategories(self):
         """
