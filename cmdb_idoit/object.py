@@ -189,7 +189,7 @@ class CMDBObject(collections.abc.Mapping):
         self.fields = self.type_object.getObjectStructure()
         self._reset_fetch_state()
 
-        if fetchall:
+        if fetch_all:
             self.loadAllCategoryData()
 
     def _reset_fetch_state(self):
