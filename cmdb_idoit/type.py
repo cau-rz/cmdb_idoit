@@ -122,7 +122,7 @@ class CMDBType(dict):
         self.meta['type_group_title'] = result['type_group_title']
         self.meta['tree_group'] = result['tree_group']
 
-        logging.info("Loading type %s" % self.get_const())
+        logging.debug("Loading type %s" % self.get_const())
 
         result = request('cmdb.object_type_categories', {'type': self.get_id()})
 
@@ -140,11 +140,11 @@ class CMDBType(dict):
         categories_parameter = list()
         for category_type, category in categories:
             categories_parameter.append({'id': category['id'], 'const': category['const'], 'global': category_type})
-        logging.info("Fetch categories for type %s" % self.const)
+        logging.debug("Fetch categories for type %s" % self.const)
         fetch_categories(categories_parameter)
 
         for glob, cat in categories:
-            logging.info("Loading category %s" % cat['const'])
+            logging.debug("Loading category %s" % cat['const'])
             category_type_inclusion = self.CMDBTypeCategoryInclusion()
             if 'parent' in cat:
                 category_type_inclusion.parent = cat['parent']

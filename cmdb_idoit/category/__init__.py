@@ -155,10 +155,10 @@ class CMDBCategory(dict):
 
         if not is_categorie_cached(self.const):
             if self.id != None:
-                logging.info('Caching category %s' % self.const)
+                logging.debug('Caching category %s' % self.const)
                 cmdbCategoryCache[self.const] = self
             else:
-                logging.info('Not caching category %s' % self.const)
+                logging.debug('Not caching category %s' % self.const)
 
 
     def get_id(self):
