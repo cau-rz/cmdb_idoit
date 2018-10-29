@@ -176,11 +176,11 @@ class CMDBObject(collections.abc.Mapping):
 
         # Handle object data
         if isinstance(object_data, collections.abc.Mapping):
-            self.id = int(data['id'])
-            self.sys_id = data['sysid']
-            self.title = data['title']
-            self.status = data['status']
-            self.type = data['type']
+            self.id = int(object_data['id'])
+            self.sys_id = object_data['sysid']
+            self.title = object_data['title']
+            self.status = object_data['status']
+            self.type = object_data['type']
         else:
             self.type = object_data
 
