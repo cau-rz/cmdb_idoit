@@ -317,6 +317,14 @@ class CMDBObject(collections.abc.Mapping):
             else:
                 self.fields[category_const].mark_updated()
 
+    def hasUpdates(self):
+        if not self.is_up2date:
+            return True
+        for category_const,field in self.fields.items():
+            if field.has_updates():
+                return True
+        return False
+
     def save(self):
         """
         Save the object in the database. This will automagically create the object
