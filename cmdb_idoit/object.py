@@ -353,63 +353,66 @@ class CMDBObject(collections.abc.Mapping):
 
         requests = dict()
 
-        for category_const in self.getTypeCategories():
+        def _category_save_parameters(category,field):
+            category_const = category.get_const()
+            method = None
+            parameter_data = dict()
+            for key, value in field.items():
+                logging.debug("%s[%s](%s)=%s" % (category_const, key, category.get_field_data_type(key), str(value)))
+                if field.has_value_been_updated(key):
+                    parameter_data[key] = value
+            if field.id is not None:
+                method = "cmdb.category.update"
+                parameter_data['id'] = field.id
+            else:
+                method = "cmdb.category.create"
+
+            return (method,parameter_data)
+
+        for category_const,category_fields in self.fields.items():
+            category = category_fields.category
+
+            # Skip the logbook category, we do not manipulate this category ever.
             if category_const == 'C__CATG__LOGBOOK':
-                logging.debug("Skip C__CATG__LOGBOOK")
+                logging.debug("Skipping C__CATG__LOGBOOK")
                 continue
-            category = get_category(category_const)
-            pm_tpl = dict()
-            pm_tpl['objID'] = self.id
-            pm_tpl['category'] = category_const
 
-            object_type = get_cmdb_type(self.type)
-
-            multi_value = object_type.get_category_inclusion(category_const).multi_value
-
-            # Skip this category iff we are not creating and field is not fetched
+            # Skip the category iff we are not creating a new object and the category
+            # was not fetched, and hence no change had been applied
             if not is_create and not self._is_category_data_fetched(category_const):
                 continue
 
-            if multi_value:
-                for field in self.fields[category_const]:
+            parameter_template = dict()
+            parameter_template['objID'] = self.id
+            parameter_template['category'] = category_const
+
+            if isinstance(category_fields,CMDBCategoryValuesList):
+                # Process changed entries
+                for field in category_fields:
                     if field.has_updates():
-                        parameter = pm_tpl.copy()
-                        parameter['data'] = dict()
-                        logging.debug("%s" % (category_const))
-                        for key, value in field.items():
-                            logging.debug("%s[%s](%s)=%s" % (category_const, key, category.get_field_data_type(key), str(value)))
-                            if field.has_value_been_updated(key):
-                                parameter['data'][key] = value
-                        if field.id is not None:
-                            method = "cmdb.category.update"
-                            parameter['data']['id'] = field.id
-                        else:
-                            method = "cmdb.category.create"
+                        # Receive changeset and processing method and queue the request
+                        (method,data) = _category_save_parameters(category,field)
+                        parameter = parameter_template.copy()
+                        parameter['data'] = data
                         requests[len(requests)] = {'method': method, 'parameter': parameter}
+                        # Update the field update state. This should happen after processing the requests
                         field.mark_updated()
-                    else:
-                        logging.debug("Category %s/%s of Object %s has no updates skipping" % (category_const, field.id, self.id))
-                for field in self.fields[category_const].deleted_items:
-                    if field.id:
-                        parameter = pm_tpl.copy()
+                # Process removed entries
+                for field in category_fields.deleted_items:
+                    if field.id is not None:
+                        parameter = parameter_template.copy()
                         logging.debug("Delete %s[%s]" % (category_const, str(field.id)))
                         method = "cmdb.category.delete"
                         parameter['id'] = field.id
                         requests[len(requests)] = {'method': "cmdb.category.delete", 'parameter': parameter}
-            elif self.fields[category_const].has_updates():
-                parameter = pm_tpl.copy()
-                parameter['data'] = dict()
-                parameter['data']['id'] = self.fields[category_const].id
-                for key, value in self.fields[category_const].items():
-                    if self.fields[category_const].has_value_been_updated(key):
-                        logging.debug("%s[%s](%s)=%s" % (category_const, key, category.get_field_data_type(key), str(value)))
-                        parameter['data'][key] = value
-                if parameter['data']['id']:
-                    method = "cmdb.category.update"
-                else:
-                    method = "cmdb.category.create"
+            elif category_fields.has_updates():
+                # Receive changeset and processing method and queue the request
+                (method,data) = _category_save_parameters(category,category_fields)
+                parameter = parameter_template.copy()
+                parameter['data'] = data
                 requests[len(requests)] = {'method': method, 'parameter': parameter}
-                self.fields[category_const].mark_updated(False)
+                # Update the field update state. This should happen after processing the requests
+                field.mark_updated()
             else:
                 logging.debug("Category %s of Object %s has no updates skipping" % (category_const, self.id))
 
