@@ -261,7 +261,7 @@ class CMDBObject(collections.abc.Mapping):
         self.field_data_fetched[category_const] = True
 
     def hasTypeCategory(self, category_const):
-        return category_const in self.type_object.getCategories()
+        return category_const in self.fields.keys()
 
     def getTypeCategories(self):
         """
@@ -269,7 +269,7 @@ class CMDBObject(collections.abc.Mapping):
 
         :rtype: list
         """
-        return self.type_object.getCategories()
+        return self.fields.keys()
 
     def __setattr__(self, name, value):
         if name != "is_up2date":
@@ -290,10 +290,8 @@ class CMDBObject(collections.abc.Mapping):
         return self.fields[key]
 
     def __delitem__(self, category_const):
-        multi_value = get_cmdb_type(self.type).get_category_inclusion(category_const).multi_value
-        if multi_value:
-            for i in range(1, len(self.fields[category_const])):
-                del self.fields[category_const]
+        if isinstance(self.fields[category_const],CMDBCategoryValuesList):
+            del self.fields[category_const]
         else:
             raise NotImplementedError()
 
@@ -308,14 +306,12 @@ class CMDBObject(collections.abc.Mapping):
         Mark all fields in all loaded Categories as updated.
         So we when save is called we will rewrite all data.
         """
-        for category_const in self.getTypeCategories():
-            object_type = get_cmdb_type(self.type)
-            multi_value = object_type.get_category_inclusion(category_const).multi_value
-            if multi_value:
-                for field in self.fields[category_const]:
+        for category_fields in self.fields.values():
+            if isinstance(category_fields,CMDBCategoryValuesList):
+                for field in category_fields:
                     field.mark_updated()
             else:
-                self.fields[category_const].mark_updated()
+                category_fields.mark_updated()
 
     def hasUpdates(self):
         if not self.is_up2date:
