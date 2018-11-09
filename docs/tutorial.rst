@@ -106,7 +106,7 @@ category data.
 ::
 
   someserver = servers.pop()
-  someserver.title = "Some new Title"
+  someserver.title = "Some new title"
   someserver.save()
 
 We can of course manipulate other data, too.
@@ -119,6 +119,17 @@ We can of course manipulate other data, too.
 
 The above example will, save the new value. Even if you have not loaded the
 category data for ``C__CATG__GLOBAL``.
+
+Creating new objects
+--------------------
+
+To create a new object, you do the following:
+
+::
+  new_object = cmdb.CMDBObject('C__OBJTYPE__CONTACT')
+  new_object.title = "Some new title"
+
+That's it, now you are able to insert more data, as shown above.
 
 Dealing with Dialogs
 --------------------
