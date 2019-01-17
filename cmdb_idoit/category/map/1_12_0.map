@@ -69,6 +69,7 @@ C__CATG__IP active int $.value
 C__CATG__IP aliases list_int $[*].id
 C__CATG__IP assigned_port int $.id
 C__CATG__IP assigned_logical_port int $.id
+C__CATG__IP dns_domain list_int $[*].id
 C__CATG__IP dns_server list_text $[*].ref_title
 C__CATG__IP hostaddress text $.ref_title
 C__CATG__IP ipv4_address text $.ref_title
