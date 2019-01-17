@@ -31,7 +31,7 @@ def _get_rules():
 
     resource_package = __name__  # Could be any module/package name
     # TODO We need a version selector in here, now just migrate to the new version.
-    resource_path = '/'.join(('map', '1_11_0.map'))  # Do not use os.path.join(), see below
+    resource_path = '/'.join(('map', '1_12_0.map'))  # Do not use os.path.join(), see below
 
     template = pkg_resources.resource_string(resource_package, resource_path)
     rules = dict()
