@@ -23,6 +23,8 @@ import math
 import os
 import requests
 
+from .exceptions import CMDBRequestError
+
 
 url = None
 apikey = None
@@ -117,7 +119,7 @@ def request(method, parameters):
     # Raise Exception when an error accures
     if 'error' in res_json:
         logging.error(res_json['error'])
-        raise Exception("Error(%i): %s" % (res_json['error']['code'], res_json['error']['message']))
+        raise CMDBRequestError("Error(%i): %s" % (res_json['error']['code'], res_json['error']['message']),res_json['error']['code'])
 
     logging.debug('result:' + json.dumps(res_json['result'], sort_keys=True, indent=4,default=__json_serial))
     return res_json['result']
