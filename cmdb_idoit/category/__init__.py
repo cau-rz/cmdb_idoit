@@ -21,6 +21,8 @@ import textwrap
 from cmdb_idoit.session import *
 from cmdb_idoit.category.value_factory import *
 
+from cmdb_idoit.exceptions import CMDBNoneAPICategory
+
 
 class CMDBCategoryCache(dict):
     """
@@ -117,7 +119,8 @@ def fetch_categories(categories):
         if categorie['global'] == CMDBCategoryType.type_custom:
             key = 'c' + str(categorie['id'])
         if key in results:
-            fetched.append(CMDBCategory(categorie['id'], categorie['const'], categorie['global'], results[key]))
+            category_object = CMDBCategory(categorie['id'], categorie['const'], categorie['global'], results[key])
+            fetched.append(category_object)
         elif is_categorie_cached(categorie['const']):
                 fetched.append(get_category(categorie['const']))
 
@@ -148,7 +151,11 @@ class CMDBCategory(dict):
             parameter['category'] = self.const
 
         if result is None:
-            result = request('cmdb.category_info', parameter)
+            try:
+                result = request('cmdb.category_info', parameter)
+            except CMDBRequestError as e:
+                if e.errnr == -32099:
+                    raise CMDBNoneAPICategory(e.message)
 
         if type(result) is dict:
             self.fields = result
