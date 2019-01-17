@@ -80,8 +80,9 @@ def __json_serial(obj):
 
     if isinstance(obj, (datetime, date)):
         return obj.isoformat()
+    elif isinstance(obj, CMDBRequestError):
+        return obj.message
     raise TypeError ("Type %s not serializable" % type(obj))
-
 
 def request(method, parameters):
     """
@@ -92,43 +93,19 @@ def request(method, parameters):
     if not type(parameters) is dict:
         raise TypeError('parameters not of type dict, but instead ', type(parameters))
 
-    parameters['apikey'] = apikey
-    payload = {
-        "id": 1,
-        "method": method,
-        "params": parameters,
-        "version": "2.0"}
-    logging.debug('request:request_payload:' + json.dumps(payload, sort_keys=True, indent=4,default=__json_serial))
-    response = session.post(url, data=json.dumps(payload,default=__json_serial), stream=False)
-    session_stats['requests'] += 1
-    session_stats['queries'] += 1
+    results = __request({ '1' : { 'method': method, 'parameter': parameters}},True)
 
-    # Validate response
-    status_code = response.status_code
-    if status_code > 400:
-        raise Exception("HTTP-Error(%i)" % status_code)
-
-    if 'content-type' in response.headers:
-        if not response.headers['content-type'] == 'application/json':
-            raise Exception("Response has unexpected content-type: %s for request %s" % (response.headers['content-type'],url),response.content)
-    try:
-        res_json = response.json()
-    except ValueError:
+    if '1' in results:
+        res_json = results['1']
+    else:
         return None
 
-    # Raise Exception when an error accures
-    if 'error' in res_json:
-        logging.error(res_json['error'])
-        raise CMDBRequestError("Error(%i): %s" % (res_json['error']['code'], res_json['error']['message']),res_json['error']['code'])
-
-    logging.debug('result:' + json.dumps(res_json['result'], sort_keys=True, indent=4,default=__json_serial))
-    return res_json['result']
-
+    return res_json
 
 def multi_requests(method, parameters):
     """
     Call a JSON RPC `method` with given `parameters`. Automagically handling authentication
-    and error handling.
+    and connection error handling.
     """
     global url
 
@@ -137,9 +114,21 @@ def multi_requests(method, parameters):
 
     if len(parameters) == 0:
         return {}
+
+    multi_parameters = dict()
+    for key, parameter in parameters.items():
+        multi_parameters[key] = { 'method': method,
+                            'parameter': parameter 
+                          }
+    return multi_method_request(multi_parameters)
+
+def multi_method_request(parameters):
     """
     When we have more requests than the idoit system can handle then
     we split them up and merge the results.
+
+    Since this is a bulk operation, we don't do raise error handling on the results,
+    we assume that the code invoking this operation is deciding how to handle returned Exceptions.
     """
     max_parameters = 512
     if len(parameters) > max_parameters:
@@ -148,51 +137,13 @@ def multi_requests(method, parameters):
         items = list(parameters.items())
         for i in range(0,math.ceil(length / max_parameters)):
           sub = dict(items[max_parameters * i:min(max_parameters * (i + 1),length)])
-          sub_result = multi_requests(method,sub)
+          sub_result = __request(method,False)
           result.update(sub_result)
         return result
+    else: 
+        return __request(parameters,False)
 
-
-    payload = list()
-    for key, parameter in parameters.items():
-        if not type(parameter) is dict:
-            raise TypeError('entry of parameters not of type dict, but instead ', type(parameter))
-        parameter['apikey'] = apikey
-        payload.append({
-            "id": key,
-            "method": method,
-            "params": parameter,
-            "version": "2.0"})
-
-    logging.debug('request_payload:' + json.dumps(payload, sort_keys=True, indent=4,default=__json_serial))
-    response = session.post(url, data=json.dumps(payload,default=__json_serial), stream=False)
-    session_stats['requests'] += 1
-    session_stats['queries'] += len(payload)
-
-    # Validate response
-    status_code = response.status_code
-    if status_code > 400:
-        raise Exception("HTTP-Error(%i)" % status_code)
-
-    if 'content-type' in response.headers:
-        if not response.headers['content-type'] == 'application/json':
-            raise Exception("Response has unexpected content-type: %s", response.headers['content-type'])
-    res_jsons = response.json()
-    if res_jsons is None:
-        return dict()
-
-    result = dict()
-    for res_json in res_jsons:
-        # Raise Exception when an error accures
-        if 'error' in res_json and res_json['error']:
-            logging.error(res_json['error'])
-        else:
-            result[res_json['id']] = res_json['result']
-
-    logging.debug('result:' + json.dumps(result, sort_keys=True, indent=4,default=__json_serial))
-    return result
-
-def multi_method_request(parameters):
+def __request(parameters,raise_errors,store_errors=False):
     """
     Sequentially handle multiple requests.
 
@@ -247,9 +198,13 @@ def multi_method_request(parameters):
 
     result = dict()
     for res_json in res_jsons:
-        # Raise Exception when an error accures
-        if 'error' in res_json and res_json['error']:
-            logging.error(res_json['error'])
+        if 'error' in res_json:
+            logging.debug(res_json['error'])
+            error = CMDBRequestError(res_json['error']['message'],res_json['error']['code'])
+            if raise_errors:
+                raise error
+            if store_errors:
+                result[res_json['id']] = error
         else:
             result[res_json['id']] = res_json['result']
 
