@@ -150,8 +150,12 @@ class CMDBType(dict):
                 category_type_inclusion.parent = cat['parent']
             category_type_inclusion.multi_value = cat['multi_value'] == "1"
             category_type_inclusion.source_table = cat['source_table']
-
-            category_object = get_category(category_const=cat['const'], category_id=cat['id'], category_type=glob)
+            
+            try:
+                category_object = get_category(category_const=cat['const'], category_id=cat['id'], category_type=glob)
+            except CMDBNoneAPICategory:
+                logging.warning(f"Category {cat['const']} cannot be handled by API, ignoring")
+                continue
             category_type_inclusion.category = category_object
             if category_object.is_global_category():
                 self.global_categories[category_object.get_const()] = category_type_inclusion
