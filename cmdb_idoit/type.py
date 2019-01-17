@@ -153,16 +153,15 @@ class CMDBType(dict):
             
             try:
                 category_object = get_category(category_const=cat['const'], category_id=cat['id'], category_type=glob)
+                category_type_inclusion.category = category_object
+                if category_object.is_global_category():
+                    self.global_categories[category_object.get_const()] = category_type_inclusion
+                elif category_object.is_specific_category():
+                    self.specific_categories[category_object.get_const()] = category_type_inclusion
+                else:
+                    self.custom_categories[category_object.get_const()] = category_type_inclusion
             except CMDBNoneAPICategory:
                 logging.warning(f"Category {cat['const']} cannot be handled by API, ignoring")
-                continue
-            category_type_inclusion.category = category_object
-            if category_object.is_global_category():
-                self.global_categories[category_object.get_const()] = category_type_inclusion
-            elif category_object.is_specific_category():
-                self.specific_categories[category_object.get_const()] = category_type_inclusion
-            else:
-                self.custom_categories[category_object.get_const()] = category_type_inclusion
 
     def get_category_inclusion(self, category_const):
         if category_const in self.global_categories:
