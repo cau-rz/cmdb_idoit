@@ -114,7 +114,7 @@ class CMDBType(dict):
 
         result = result.pop()
 
-        self.id = result['id']
+        self.id = int(result['id'])
         self.const = result['const']
         self.titlte = result['title']
         self.status = result['status']
