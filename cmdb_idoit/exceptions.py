@@ -5,3 +5,6 @@ class CMDBRequestError(Exception):
 
 class CMDBNoneAPICategory(Exception):
     pass
+
+class CMDBUnkownType(Exception):
+    pass

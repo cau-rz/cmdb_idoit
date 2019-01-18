@@ -18,6 +18,7 @@
 from .session import *
 from .category import *
 
+from .exceptions import CMDBUnkownType
 
 class CMDBTypeCache(dict):
 
@@ -107,9 +108,7 @@ class CMDBType(dict):
         result = request('cmdb.object_types', {'filter': {'id': type_id}})
 
         if len(result) == 0:
-            logging.warning("Can't fetch type information for type_id: %s" % type_id)
-            self.id = type_id
-            self.const = 'UNKNOWN_TYPE_' + type_id
+            raise CMDBUnkownType(f"Unkown type { type_id }")
             return
 
         result = result.pop()
