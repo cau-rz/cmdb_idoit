@@ -136,7 +136,7 @@ class CMDBCategory(dict):
     
 
     def __init__(self, category_id, category_const, category_type, result=None):
-        self.id = category_id
+        self.id = int(category_id)
         self.const = category_const
         self.category_type = category_type
         self.custom_category = False
