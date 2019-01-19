@@ -180,7 +180,7 @@ class CMDBObject(collections.abc.Mapping):
             self.sys_id = object_data['sysid']
             self.title = object_data['title']
             self.status = object_data['status']
-            self.type = object_data['type']
+            self.type = int(object_data['type'])
         else:
             self.type = object_data
 
