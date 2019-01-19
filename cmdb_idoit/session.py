@@ -137,7 +137,7 @@ def multi_method_request(parameters):
         items = list(parameters.items())
         for i in range(0,math.ceil(length / max_parameters)):
           sub = dict(items[max_parameters * i:min(max_parameters * (i + 1),length)])
-          sub_result = __request(method,False)
+          sub_result = __request(sub,False)
           result.update(sub_result)
         return result
     else: 
