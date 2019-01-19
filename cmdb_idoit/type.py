@@ -17,34 +17,49 @@
 
 from .session import *
 from .category import *
-
 from .exceptions import CMDBUnkownType
 
-class CMDBTypeCache(dict):
+import collections.abc
+
+class CMDBTypeCache(collections.abc.MutableMapping):
 
     def __init__(self):
         self.const_to_type = dict()
+        self.map = dict()
 
     def __setitem__(self, key, value):
         if not type(value) is CMDBType:
             raise TypeError("Object is not of type CMDBType")
         if key in self.const_to_type:
-            dict.__setitem__(self, self.const_to_type[key], value)
+            self.map[self.const_to_type[key]] = value
         else:
             self.const_to_type[value.get_const()] = value.get_id()
-            dict.__setitem__(self, key, value)
+            self.map[key] = value
 
     def __getitem__(self, key):
         if key in self.const_to_type:
-            return dict.__getitem__(self, self.const_to_type[key])
+            return self.map[self.const_to_type[key]]
         else:
-            return dict.__getitem__(self, key)
+            return self.map[key]
+
+    def __delitem__(self, key):
+        """
+        We assume cached types to be inherent.
+        """
+        raise NotImplemented("You shall not delete items from type cache")
 
     def __contains__(self, key):
         if key in self.const_to_type:
-            return dict.__contains__(self, self.const_to_type[key])
+            return self.const_to_type[key] in self.map
         else:
-            return dict.__contains__(self, key)
+            return key in self.map 
+
+    def __iter__(self):
+        return self.map.__iter__();
+    
+    def __len__(self):
+        return len(self.map);
+
 
 
 cmdbTypeCache = CMDBTypeCache()
