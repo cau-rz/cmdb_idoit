@@ -408,7 +408,7 @@ class CMDBObject(collections.abc.Mapping):
                 parameter['data'] = data
                 requests[len(requests)] = {'method': method, 'parameter': parameter}
                 # Update the field update state. This should happen after processing the requests
-                field.mark_updated()
+                category_fields.mark_updated()
             else:
                 logging.debug("Category %s of Object %s has no updates skipping" % (category_const, self.id))
 
