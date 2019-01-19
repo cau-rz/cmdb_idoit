@@ -44,7 +44,7 @@ class CMDBObjects(list):
         if limit != 0:
             parameter['limit'] = limit
 
-        result = request('cmdb.objects', {'filter': self.filters})
+        result = request('cmdb.objects', parameter)
         for raw_object in result:
             cmdb_object = CMDBObject(raw_object)
             self.append(cmdb_object)
