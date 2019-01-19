@@ -70,7 +70,7 @@ def get_type_const_from_id(type_id):
     Returns the type id for an given type const.
     """
     cmdb_type = get_cmdb_type(type_id)
-    return cmdb_type.get_const
+    return cmdb_type.get_const()
 
 
 class CMDBType(dict):
