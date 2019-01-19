@@ -198,7 +198,7 @@ def __request(parameters,raise_errors,store_errors=False):
 
     result = dict()
     for res_json in res_jsons:
-        if 'error' in res_json:
+        if 'error' in res_json and res_json['error'] is not None:
             logging.debug(res_json['error'])
             error = CMDBRequestError(res_json['error']['message'],res_json['error']['code'])
             if raise_errors:
