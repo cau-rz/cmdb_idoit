@@ -21,6 +21,7 @@ import pkg_resources
 import re
 import jsonpath_ng
 import datetime
+import textwrap
 
 rules = None
 
@@ -160,6 +161,16 @@ def value_representation_factory(category,key,value = None):
                 jpath = rules[category_const][key]['jpath']
                 matches = jpath.find(value)
                 if len(matches) == 0:
+                    logging.fatal(textwrap.dedent(f"""\
+                            There was a fatal error applying a representation mapping for {category_const}.{key}.
+                            According to the API the type of this attribute is "{data_type}" the mapping suggested
+                            a JSON path of "{ rules[category_const][key]['path'] }", this path doesn't match on:
+
+                              { value }
+
+                            Either the api result has been changed and hence the mapping didn't work any more,
+                            or we do something utterly wrong.
+                            """))
                     raise Exception("Error matching value,",rules[category_const][key]['path'],str(value))
                 if itype == 'int':
                     # Dialog Handling?
