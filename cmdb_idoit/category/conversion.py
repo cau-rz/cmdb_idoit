@@ -95,7 +95,11 @@ def conver_datetime(value):
             newvalue = str(value).split(' - ')[0]
             return datetime.datetime.strptime(newvalue, "%Y-%m-%d %H:%M:%S")
         except Exception as e:
-            logging.warning(e)
+            try:
+                return datetime.datetime.strptime(newvalue, "%Y-%m-%d")
+            except Exception:
+                logging.warning(e)
+
     else:
         raise ConversionException("Conversion of none string to datetime is not supported '%s'" % repr(value))
 

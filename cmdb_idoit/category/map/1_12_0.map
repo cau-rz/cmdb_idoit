@@ -13,6 +13,7 @@ C__CATG__APPLICATION assigned_it_service list_int $[*].id
 C__CATG__APPLICATION assigned_license list_int $[*].id
 C__CATG__APPLICATION assigned_version int $.id
 C__CATG__APPLICATION bequest_nagios_services int $.value
+C__CATG__APPLICATION assigned_variant int $.id
 C__CATG__BACKUP backup int $.id
 C__CATG__CABLE cable_colour int $.id
 C__CATG__CABLE cable_occupancy int $.id
@@ -24,10 +25,10 @@ C__CATG__CLUSTER_MEMBERS member int $.id
 C__CATG__CLUSTER_MEMBERSHIPS connected_object list_int $[*].id
 C__CATG__CLUSTER_ROOT quorum int $.value
 C__CATG__CMK active int $.value
-C__CATG__CMK export_ip int $.id
+C__CATG__CMK export_ip int $.value
 C__CATG__CMK_DEF active int $.value
-C__CATG__CMK_DEF export_ip int $.id
-C__CATG__CMK_TAG tags list_text $[*]
+C__CATG__CMK_DEF export_ip int $.value
+C__CATG__CMK_TAG tags list_text $[*].val
 C__CATG__CONNECTOR assigned_category text $.title
 C__CATG__CONNECTOR assigned_connector list_int $[*].id
 C__CATG__CONNECTOR cable_connection list_int $[*].id
