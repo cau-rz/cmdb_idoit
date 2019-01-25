@@ -181,7 +181,7 @@ def __request(parameters,raise_errors,store_errors=False):
     # Validate response
     status_code = response.status_code
     if status_code > 400:
-        raise Exception("HTTP-Error(%i)" % status_code)
+        raise Exception("HTTP-Error(%i): %s" % (status_code,response.text))
 
     if 'content-type' in response.headers:
         if not response.headers['content-type'] == 'application/json':
