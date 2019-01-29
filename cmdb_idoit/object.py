@@ -359,7 +359,7 @@ class CMDBObject(collections.abc.Mapping):
                     parameter_data[key] = value
             if field.id is not None:
                 method = "cmdb.category.save"
-                parameter_data['id'] = field.id
+                parameter_data['category_id'] = field.id
             else:
                 method = "cmdb.category.create"
 
