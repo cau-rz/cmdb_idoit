@@ -358,7 +358,7 @@ class CMDBObject(collections.abc.Mapping):
                 if field.has_value_been_updated(key):
                     parameter_data[key] = value
             if field.id is not None:
-                method = "cmdb.category.update"
+                method = "cmdb.category.save"
                 parameter_data['id'] = field.id
             else:
                 method = "cmdb.category.create"
