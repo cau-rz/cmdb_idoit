@@ -352,6 +352,7 @@ class CMDBObject(collections.abc.Mapping):
         def _category_save_parameters(category,field):
             category_const = category.get_const()
             method = None
+            entry_id = None
             parameter_data = dict()
             for key, value in field.items():
                 logging.debug("%s[%s](%s)=%s" % (category_const, key, category.get_field_data_type(key), str(value)))
@@ -359,11 +360,11 @@ class CMDBObject(collections.abc.Mapping):
                     parameter_data[key] = value
             if field.id is not None:
                 method = "cmdb.category.save"
-                parameter_data['category_id'] = field.id
+                entry_id = field.id
             else:
                 method = "cmdb.category.create"
 
-            return (method,parameter_data)
+            return (method,entry_id,parameter_data)
 
         for category_const,category_fields in self.fields.items():
             category = category_fields.category
@@ -387,8 +388,9 @@ class CMDBObject(collections.abc.Mapping):
                 for field in category_fields:
                     if field.has_updates():
                         # Receive changeset and processing method and queue the request
-                        (method,data) = _category_save_parameters(category,field)
+                        (method,entry_id,data) = _category_save_parameters(category,field)
                         parameter = parameter_template.copy()
+                        parameter['entry'] = entry_id
                         parameter['data'] = data
                         requests[len(requests)] = {'method': method, 'parameter': parameter}
                         # Update the field update state. This should happen after processing the requests
@@ -399,12 +401,13 @@ class CMDBObject(collections.abc.Mapping):
                         parameter = parameter_template.copy()
                         logging.debug("Delete %s[%s]" % (category_const, str(field.id)))
                         method = "cmdb.category.delete"
-                        parameter['id'] = field.id
+                        parameter['entry'] = field.id
                         requests[len(requests)] = {'method': "cmdb.category.delete", 'parameter': parameter}
             elif category_fields.has_updates():
                 # Receive changeset and processing method and queue the request
-                (method,data) = _category_save_parameters(category,category_fields)
+                (method,entry_id,data) = _category_save_parameters(category,category_fields)
                 parameter = parameter_template.copy()
+                parameter['entry'] = entry_id
                 parameter['data'] = data
                 requests[len(requests)] = {'method': method, 'parameter': parameter}
                 # Update the field update state. This should happen after processing the requests
