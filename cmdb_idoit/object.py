@@ -381,6 +381,7 @@ class CMDBObject(collections.abc.Mapping):
 
             parameter_template = dict()
             parameter_template['objID'] = self.id
+            parameter_template['object'] = self.id
             parameter_template['category'] = category_const
 
             if isinstance(category_fields,CMDBCategoryValuesList):
