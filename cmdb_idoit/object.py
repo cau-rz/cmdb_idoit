@@ -362,7 +362,7 @@ class CMDBObject(collections.abc.Mapping):
                 method = "cmdb.category.save"
                 entry_id = field.id
             else:
-                method = "cmdb.category.create"
+                method = "cmdb.category.save"
 
             return (method,entry_id,parameter_data)
 
