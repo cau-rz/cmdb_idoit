@@ -391,7 +391,8 @@ class CMDBObject(collections.abc.Mapping):
                         # Receive changeset and processing method and queue the request
                         (method,entry_id,data) = _category_save_parameters(category,field)
                         parameter = parameter_template.copy()
-                        parameter['entry'] = entry_id
+                        if entry_id is not None:
+                            parameter['entry'] = entry_id
                         parameter['data'] = data
                         requests[len(requests)] = {'method': method, 'parameter': parameter}
                         # Update the field update state. This should happen after processing the requests
