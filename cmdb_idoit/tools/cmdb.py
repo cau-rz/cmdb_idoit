@@ -140,19 +140,22 @@ def run_queries(filename):
     with open(filename,'r') as f:
         rq = json.load(f)
         if isinstance(rq,dict):
+            requests = {}
+            requests[0] = { 'method': rq['method'], 'parameter': rq['params'] }
             result = cmdb.multi_method_request(rq)
             print("Request:")
-            print(json.dumps(rq, sort_keys=True, indent=4))
+            print(json.dumps(requests, sort_keys=True, indent=4))
             print("Result:")
             print(json.dumps(result, sort_keys=True, indent=4))
         elif isinstance(rq,list):
+            requests = {}
             for r in rq:
-                result = cmdb.multi_method_request(r)
-                print("Request:")
-                print(json.dumps(r, sort_keys=True, indent=4))
-                print("Result:")
-                print(json.dumps(result, sort_keys=True, indent=4))
-
+                requests[r['id']] = { 'method': r['method'], 'parameter': r['params'] }
+            result = cmdb.multi_method_request(requests)
+            print("Request:")
+            print(json.dumps(requests, sort_keys=True, indent=4))
+            print("Result:")
+            print(json.dumps(result, sort_keys=True, indent=4))
 
 if __name__ == '__main__':
     cli()
