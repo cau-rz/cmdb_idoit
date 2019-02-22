@@ -122,7 +122,7 @@ def multi_requests(method, parameters):
                           }
     return multi_method_request(multi_parameters)
 
-def multi_method_request(parameters):
+def multi_method_request(parameters,store_errors=False):
     """
     When we have more requests than the idoit system can handle then
     we split them up and merge the results.
@@ -137,11 +137,11 @@ def multi_method_request(parameters):
         items = list(parameters.items())
         for i in range(0,math.ceil(length / max_parameters)):
           sub = dict(items[max_parameters * i:min(max_parameters * (i + 1),length)])
-          sub_result = __request(sub,False)
+          sub_result = __request(sub,False,store_errors)
           result.update(sub_result)
         return result
     else: 
-        return __request(parameters,False)
+        return __request(parameters,False,store_errors)
 
 def __request(parameters,raise_errors,store_errors=False):
     """

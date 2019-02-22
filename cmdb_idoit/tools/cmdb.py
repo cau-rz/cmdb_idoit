@@ -17,6 +17,7 @@
 """
 
 import click
+from datetime import date, datetime
 import cmdb_idoit as cmdb
 import logging
 import json
@@ -134,6 +135,15 @@ def object_load(load_object,with_category=list()):
             obj.loadCategoryData(category_const);
             print(json.dumps(obj[category_const], sort_keys=True, indent=4))
 
+def __json_serial(obj):
+    """JSON serializer for objects not serializable by default json code"""
+
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    elif isinstance(obj, cmdb.CMDBRequestError):
+        return obj.message
+    raise TypeError ("Type %s not serializable" % type(obj))
+
 @cli.command("run")
 @click.argument("filename")
 def run_queries(filename):
@@ -142,20 +152,20 @@ def run_queries(filename):
         if isinstance(rq,dict):
             requests = {}
             requests[0] = { 'method': rq['method'], 'parameter': rq['params'] }
-            result = cmdb.multi_method_request(rq)
+            result = cmdb.multi_method_request(rq,store_errors=True)
             print("Request:")
             print(json.dumps(requests, sort_keys=True, indent=4))
             print("Result:")
-            print(json.dumps(result, sort_keys=True, indent=4))
+            print(json.dumps(result, sort_keys=True, indent=4,default=__json_serial))
         elif isinstance(rq,list):
             requests = {}
             for r in rq:
                 requests[r['id']] = { 'method': r['method'], 'parameter': r['params'] }
-            result = cmdb.multi_method_request(requests)
+            result = cmdb.multi_method_request(requests,store_errors=True)
             print("Request:")
             print(json.dumps(requests, sort_keys=True, indent=4))
             print("Result:")
-            print(json.dumps(result, sort_keys=True, indent=4))
+            print(json.dumps(result, sort_keys=True, indent=4,default=__json_serial))
 
 if __name__ == '__main__':
     cli()
