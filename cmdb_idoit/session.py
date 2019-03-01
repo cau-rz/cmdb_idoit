@@ -37,7 +37,7 @@ session_stats = { 'requests': 0,
                 }
 
 
-def init_session(cmdb_url, cmdb_apikey, cmdb_username, cmdb_password):
+def init_session(cmdb_url, cmdb_apikey, cmdb_username, cmdb_password,ssl_verify=False):
     """
     Initialise session.
 
@@ -53,8 +53,8 @@ def init_session(cmdb_url, cmdb_apikey, cmdb_username, cmdb_password):
     apikey = cmdb_apikey
 
     session.auth = requests.auth.HTTPBasicAuth(username, password)
-    session.verify = False
     session.headers.update(headers)
+    session.verify = ssl_verify
 
 
 def init_session_from_config(instance='main'):
