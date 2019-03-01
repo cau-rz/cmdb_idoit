@@ -29,7 +29,6 @@ from .exceptions import CMDBRequestError
 url = None
 apikey = None
 
-headers = {'content-type': 'application/json'}
 
 session = requests.Session()
 session_stats = { 'requests': 0,
@@ -52,9 +51,8 @@ def init_session(cmdb_url, cmdb_apikey, cmdb_username, cmdb_password,ssl_verify=
     password = cmdb_password
     apikey = cmdb_apikey
 
-    session.auth = requests.auth.HTTPBasicAuth(username, password)
-    session.headers.update(headers)
     session.verify = ssl_verify
+    __session_configure()
 
 
 def init_session_from_config(instance='main'):
@@ -71,9 +69,32 @@ def init_session_from_config(instance='main'):
     password = config[instance].get('password')
     apikey = config[instance].get('apikey')
 
-    session.auth = requests.auth.HTTPBasicAuth(username, password)
     session.verify = config[instance].get('verify',False)
-    session.headers.update(headers)
+    __session_configure()
+
+def __session_configure():
+    global session, url, apikey, username, password
+
+    auth_header = { 'X-RPC-Auth-Username': username
+                  , 'X-RPC-Auth-Password': password
+                  , 'content-type': 'application/json'
+                  }
+    session.headers.update(auth_header)
+
+    payload = { "id": 1 ,"method": "idoit.login", "params": { 'apikey': apikey }, "version": "2.0" }
+    response = session.post(url, data=json.dumps(payload,default=__json_serial), stream=False)
+    response.raise_for_status()
+    rj = response.json()
+
+    session_header = {'content-type': 'application/json'}
+
+    if 'session-id' in response.json():
+        session_header['X-RPC-Auth-Session'] = rj['result']['session-id']
+    else:
+        session.auth = requests.auth.HTTPBasicAuth(username, password)
+
+    session.headers.update(session_header)
+
 
 def __json_serial(obj):
     """JSON serializer for objects not serializable by default json code"""
@@ -118,7 +139,7 @@ def multi_requests(method, parameters):
     multi_parameters = dict()
     for key, parameter in parameters.items():
         multi_parameters[key] = { 'method': method,
-                            'parameter': parameter 
+                            'parameter': parameter
                           }
     return multi_method_request(multi_parameters)
 
@@ -140,7 +161,7 @@ def multi_method_request(parameters,store_errors=False):
           sub_result = __request(sub,False,store_errors)
           result.update(sub_result)
         return result
-    else: 
+    else:
         return __request(parameters,False,store_errors)
 
 def __request(parameters,raise_errors,store_errors=False):
