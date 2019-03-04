@@ -109,10 +109,10 @@ class CMDBObjects(list):
             # TODO Provide an method which encapsulates the internal data structure
             if obj.hasTypeCategory(category_const):
                 if not obj.field_data_fetched[category_const] or reload:
-                    parameters[obj.id] = {'objID': obj.id, 'category': category_const}
+                    parameters[obj.id] = {'objID': obj.id, 'category': category_const, 'status': 'C__RECORD_STATUS__NORMAL'}
         if len(parameters) == 0:
             logging.warning("Loading category data '%s' on set result in no action" % category_const)
-        result = multi_requests('cmdb.category', parameters)
+        result = multi_requests('cmdb.category.read', parameters)
 
         for obj in self:
             if obj.id in result:
@@ -127,8 +127,8 @@ class CMDBObjects(list):
             categories = obj.getTypeCategories()
             for category_const in categories:
                 parstr = "%s--%s" % (category_const, obj.id)
-                parameters["%s--%s" % (category_const, obj.id)] = {'objID': obj.id, 'category': category_const}
-        result = multi_requests('cmdb.category', parameters)
+                parameters["%s--%s" % (category_const, obj.id)] = {'objID': obj.id, 'category': category_const, 'status': 'C__RECORD_STATUS__NORMAL'}
+        result = multi_requests('cmdb.category.read', parameters)
 
         for obj in self:
             categories = obj.getTypeCategories()
@@ -208,8 +208,8 @@ class CMDBObject(collections.abc.Mapping):
         categories = self.getTypeCategories()
         parameters = dict()
         for category_const in categories:
-            parameters[category_const] = {'objID': self.id, 'category': category_const}
-        result = multi_requests('cmdb.category', parameters)
+            parameters[category_const] = {'objID': self.id, 'category': category_const, 'status': 'C__RECORD_STATUS__NORMAL'}
+        result = multi_requests('cmdb.category.read', parameters)
         for category_const in result:
             if len(result[category_const]) > 0:
                 self._fill_category_data(category_const, result[category_const])
@@ -237,7 +237,7 @@ class CMDBObject(collections.abc.Mapping):
         if self.field_data_fetched[category_const] and not reload:
             return
 
-        result = request('cmdb.category', {'objID': self.id, 'category': category_const})
+        result = request('cmdb.category.read', {'objID': self.id, 'category': category_const, 'status': 'C__RECORD_STATUS__NORMAL'})
         self._fill_category_data(category_const, result, category_object)
 
     def _fill_category_data(self, category_const, result, category_object=None):
