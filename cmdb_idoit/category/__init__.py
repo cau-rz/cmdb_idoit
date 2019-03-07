@@ -331,8 +331,9 @@ class CMDBCategoryValues(dict):
         self.id = fields['id']
         for key in self.category.getFields():
             try:
-                value = value_representation_factory(self.category, key, fields[key])
-                dict.__setitem__(self, key, value)
+                if key in fields:
+                    value = value_representation_factory(self.category, key, fields[key])
+                    dict.__setitem__(self, key, value)
             except ConversionException as e:
                 logging.fatal(textwrap.dedent("""\
                               There was a fatal error while deriving a representativ value for %(category)s.%(attribute)s.
