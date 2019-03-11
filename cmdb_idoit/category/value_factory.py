@@ -42,13 +42,19 @@ def _get_rules():
             raise Exception("None conformal rule: %s" % line)
         if rule_raw[0] not in rules:
             rules[rule_raw[0]] = dict()
-        jpath = jsonpath_ng.parse(rule_raw[3]) 
+        #jpath = jsonpath_ng.parse(rule_raw[3]) 
         rules[rule_raw[0]][rule_raw[1]] = { 
                 'type': rule_raw[2], 
                 'path': rule_raw[3],
-                'jpath': jpath
+                'jpath': None
                 }
     return rules
+
+def _apply_rule(rule,value):
+    if rule['jpath'] is None:
+        rule['jpath'] = jsonpath_ng.parse(rule['path']) 
+    return rule['jpath'].find(value)
+
 
 def get_type_mapping(category_const,field_name):
     """
@@ -158,8 +164,7 @@ def value_representation_factory(category,key,value = None):
         if category_const in rules:
             if key in rules[category_const]:
                 itype = rules[category_const][key]['type']
-                jpath = rules[category_const][key]['jpath']
-                matches = jpath.find(value)
+                matches = _apply_rule(rules[category_const][key],value)
                 if len(matches) == 0:
                     logging.fatal(textwrap.dedent(f"""\
                             There was a fatal error applying a representation mapping for {category_const}.{key}.
