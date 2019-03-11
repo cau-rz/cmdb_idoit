@@ -30,6 +30,7 @@ class CMDBCategoryCache(dict):
     """
 
     def __init__(self):
+        self.none_api_category = list()
         self.type_to_category = dict()
 
     def __setitem__(self, key, value):
@@ -46,6 +47,13 @@ class CMDBCategoryCache(dict):
             return dict.__getitem__(self, self.type_to_category[key])
         else:
             return dict.__getitem__(self, key)
+
+    def isNoneAPICategory(self,key):
+        return key in self.none_api_category
+
+    def setNoneAPICategory(self, key):
+        self.none_api_category.append(key)
+
 
 cmdbCategoryCache = CMDBCategoryCache()
 
@@ -76,6 +84,8 @@ def get_category(category_const, category_id=None, category_type=CMDBCategoryTyp
     """
     if is_categorie_cached(category_const):
         return cmdbCategoryCache[category_const]
+    elif cmdbCategoryCache.isNoneAPICategory(category_const):
+        raise CMDBNoneAPICategory(f"Category { category_const } cannot be handled by API, cached result!")
     elif category_id:
         return CMDBCategory(category_id, category_const, category_type)
     else:
@@ -155,6 +165,8 @@ class CMDBCategory(dict):
                 result = request('cmdb.category_info', parameter)
             except CMDBRequestError as e:
                 if e.errnr == -32099:
+                    logging.warning(f"Category { self.const } cannot be handled by API.")
+                    cmdbCategoryCache.setNoneAPICategory(self.const)
                     raise CMDBNoneAPICategory(e.message)
 
         if type(result) is dict:
