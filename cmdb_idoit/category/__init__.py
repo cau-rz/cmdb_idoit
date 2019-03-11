@@ -258,8 +258,6 @@ class CMDBCategoryValuesList(list):
 
     def __init__(self, category):
         self.category = category
-        self._field_up2date_state = dict()
-        self.mark_updated(False)
         self.deleted_items = list()
 
     def __setitem__(self, index, value):
@@ -306,21 +304,21 @@ class CMDBCategoryValuesList(list):
         else:
             raise TypeError("CMDBCategoryValuesList works only with dict or CMDBCategoryValues, but not with %s" % type(value))
 
-    def mark_updated(self, state=True):
+    def markChanged(self, state=True):
         """
         Change the update marker for all fields in all instanciations of the category.
         """
         for value in self:
-            value.mark_updated(state)
+            value.markChanged(state)
 
-    def has_updates(self):
+    def hasChanged(self):
         """
         Check if any of the instanciations of the category has a field which is marked updated.
         """
-        state = False
         for value in self:
-            state = state or value.has_updates()
-        return state
+            if value.hasChanged():
+                return True
+        return False
 
 
 class CMDBCategoryValues(dict):
@@ -333,8 +331,13 @@ class CMDBCategoryValues(dict):
         self.category = category
         self.field_type = dict()
         self.field_data = dict()
-        self._field_up2date_state = dict()
-        self.mark_updated(False)
+        """
+        Store the update/change state for each field in the values set of a category.
+        The value for a field is True when an update/change to that field had been applied
+        and a write to the database is required.
+        """
+        self._change_state = dict()
+        self.markUnchanged()
 
         for key in self.category.getFields():
             self.field_type[key] = type_determination(self.category, key)
@@ -360,7 +363,7 @@ class CMDBCategoryValues(dict):
                 raise Exception(e)
 
         # Since this method should only be callend on a loading process, remark all fields to be unchanged 
-        self.mark_updated(False)
+        self.markUnchanged()
 
     def __setitem__(self, index, value):
         if self.category.hasfield(index):
@@ -374,7 +377,7 @@ class CMDBCategoryValues(dict):
             else:
                old_value = None
             if old_value != value:
-                self._field_up2date_state[index] = False
+                self.markFieldChanged(index)
                 dict.__setitem__(self, index, value)
         else:
             raise KeyError("Category " + self.category.const + " has no field " + index)
@@ -399,23 +402,33 @@ class CMDBCategoryValues(dict):
         for key, val in other_dict.items():
             self[key] = val
 
-    def mark_updated(self, state=True):
-        """
-        Marks all fields of this category instance as up to date.
-        Hence when saved only manipulated and mandatory fields have to be commited
-        or if no field at all is manipulated no commit at all is needed.
+    def markFieldChanged(self,key):
+        self._change_state[key] = True
 
-        With the argument `state` this can also be used to mark all fields as not up
-        to date.
+    def markFieldUnchanged(self,key):
+        self._change_state[key] = False
+
+    def hasFieldChanged(self, key):
+        return self._change_state[key]
+
+    def markFieldsChanged(self):
+        """
+        Marks all fields of this CategoryValue to be changed.
+        Hence a save operation would save them all.
         """
         for field in self.category.getFields():
-            self._field_up2date_state[field] = not state
-
-    def has_value_been_updated(self, key):
-        return not self._field_up2date_state[key]
-
-    def has_updates(self):
-        state = True
+            self.markFieldChanged(field)
+            
+    def markUnchanged(self):
+        """
+        Marks all fields of this CategoryValue to be unchanged.
+        Hence a save operation wouldn't save any.
+        """
         for field in self.category.getFields():
-            state = state and self._field_up2date_state[field]
-        return not state
+            self.markFieldUnchanged(field)
+
+    def hasChanged(self):
+        for field in self.category.getFields():
+            if self.hasFieldChanged(field):
+                return True
+        return False

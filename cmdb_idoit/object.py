@@ -158,7 +158,7 @@ class CMDBObject(collections.abc.Mapping):
     :var str sys_id: The cmdb internal system identifier
     :var str title: The title of the object.
     :var int type_id: The numerical type ident for this object.
-    :var bool is_up2date: Has this object been changed.
+    :var bool _change_state: Has this object been changed.
     """
 
     def __init__(self, object_data, fetch_all=False):
@@ -168,7 +168,7 @@ class CMDBObject(collections.abc.Mapping):
         self.sys_id = None
         self.title = None
         self.type = None
-        self.is_up2date = False
+        self._change_state = False
 
         # Fields contains the structure of the object rebuild with CMDBCategoryValues and CMDBCategoryValuesList Objects
         self.fields = None
@@ -257,7 +257,7 @@ class CMDBObject(collections.abc.Mapping):
             for fields in result:
                 self.fields[category_const]._fill_category_data(fields)
 
-        self.is_up2date = True
+        self._change_state = True
         self.field_data_fetched[category_const] = True
 
     def hasTypeCategory(self, category_const):
@@ -272,13 +272,12 @@ class CMDBObject(collections.abc.Mapping):
         return self.fields.keys()
 
     def __setattr__(self, name, value):
-        if name != "is_up2date":
-            try:
-                if self.__getattribute__(name) != value:
-                    self.is_up2date = False
-            except AttributeError:
-                self.is_up2date = False
-        super(CMDBObject, self).__setattr__(name, value)
+        try:
+            if self.__dict__[name] != value:
+                self.__dict__['_change_state'] = True
+        except KeyError:
+            pass
+        self.__dict__[name] = value
 
     def __repr__(self):
         return repr({'id': self.id, 'type': self.type, 'title': self.title, 'values': self.fields})
@@ -301,23 +300,19 @@ class CMDBObject(collections.abc.Mapping):
     def __iter__(self):
         return self.fields.__iter__()
 
-    def markUpdated(self):
+    def markChanged():
         """
-        Mark all fields in all loaded Categories as updated.
+        Mark all fields in all loaded Categories as changed.
         So we when save is called we will rewrite all data.
         """
         for category_fields in self.fields.values():
-            if isinstance(category_fields,CMDBCategoryValuesList):
-                for field in category_fields:
-                    field.mark_updated()
-            else:
-                category_fields.mark_updated()
+            category_fields.markChanged()
 
-    def hasUpdates(self):
-        if not self.is_up2date:
+    def hasChanged(self):
+        if self._change_state:
             return True
         for category_const,field in self.fields.items():
-            if field.has_updates():
+            if field.hasChanged():
                 return True
         return False
 
@@ -332,17 +327,17 @@ class CMDBObject(collections.abc.Mapping):
 
         is_create = self.id is None
 
-        parameter = dict()
-        method = "cmdb.object.create"
-        if not is_create:
-            method = "cmdb.object.update"
-            parameter['id'] = self.id
-        parameter['type'] = self.type
-        parameter['title'] = self.title
+        if self.hasChanged():
+            parameter = dict()
+            if not is_create:
+                parameter['id'] = self.id
+            parameter['type'] = self.type
+            parameter['title'] = self.title
 
-        if not self.is_up2date:
+            method = "cmdb.object.create" if is_create else "cmdb.object.update"
+
             result = request(method, parameter)
-            self.is_up2date = True
+            self._change_state = False
 
         if is_create:
             self.id = result['id']
@@ -356,7 +351,7 @@ class CMDBObject(collections.abc.Mapping):
             parameter_data = dict()
             for key, value in field.items():
                 logging.debug("%s[%s](%s)=%s" % (category_const, key, category.get_field_data_type(key), str(value)))
-                if field.has_value_been_updated(key):
+                if field.hasFieldChanged(key):
                     parameter_data[key] = value
             if field.id is not None:
                 method = "cmdb.category.save"
@@ -387,7 +382,7 @@ class CMDBObject(collections.abc.Mapping):
             if isinstance(category_fields,CMDBCategoryValuesList):
                 # Process changed entries
                 for field in category_fields:
-                    if field.has_updates():
+                    if field.hasChanged():
                         # Receive changeset and processing method and queue the request
                         (method,entry_id,data) = _category_save_parameters(category,field)
                         parameter = parameter_template.copy()
@@ -396,7 +391,7 @@ class CMDBObject(collections.abc.Mapping):
                         parameter['data'] = data
                         requests[len(requests)] = {'method': method, 'parameter': parameter}
                         # Update the field update state. This should happen after processing the requests
-                        field.mark_updated()
+                        field.markUnchanged()
                 # Process removed entries
                 for field in category_fields.deleted_items:
                     if field.id is not None:
@@ -405,14 +400,14 @@ class CMDBObject(collections.abc.Mapping):
                         method = "cmdb.category.delete"
                         parameter['entry'] = field.id
                         requests[len(requests)] = {'method': "cmdb.category.delete", 'parameter': parameter}
-            elif category_fields.has_updates():
+            elif category_fields.hasChanged():
                 # Receive changeset and processing method and queue the request
                 (method,entry_id,data) = _category_save_parameters(category,category_fields)
                 parameter = parameter_template.copy()
                 parameter['data'] = data
                 requests[len(requests)] = {'method': method, 'parameter': parameter}
                 # Update the field update state. This should happen after processing the requests
-                category_fields.mark_updated()
+                category_fields.markUnchanged()
             else:
                 logging.debug("Category %s of Object %s has no updates skipping" % (category_const, self.id))
 
