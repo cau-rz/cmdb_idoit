@@ -96,7 +96,7 @@ def conver_datetime(value):
             return datetime.datetime.strptime(newvalue, "%Y-%m-%d %H:%M:%S")
         except Exception as e:
             try:
-                return datetime.datetime.strptime(newvalue, "%Y-%m-%d")
+                return datetime.datetime.strptime(newvalue, "%Y-%m-%d - %H:%M")
             except Exception:
                 logging.warning(e)
 
