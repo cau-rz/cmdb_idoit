@@ -91,15 +91,23 @@ def conver_datetime(value):
     if value is None:
         return None
     elif isinstance(value,str):
+        # Datetime format is frontend depending
+        # we assume the english date format here
+        if len(value) == 0:
+            return None
         try:
-            newvalue = str(value).split(' - ')[0]
-            return datetime.datetime.strptime(newvalue, "%Y-%m-%d %H:%M:%S")
-        except Exception as e:
-            try:
-                return datetime.datetime.strptime(newvalue, "%Y-%m-%d - %H:%M")
-            except Exception:
-                logging.warning(e)
-
+            return datetime.datetime.strptime(value[0:19], "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            pass
+        try:
+           return datetime.datetime.strptime(value, "%Y-%m-%d - %H:%M")
+        except ValueError:
+            pass
+        try:
+            return datetime.datetime.strptime(value,"%Y-%m-%d")
+        except ValueError:
+            pass
+        logging.warning(f"Conversion of '{ value }' to datetime is not supported")
     else:
         raise ConversionException("Conversion of none string to datetime is not supported '%s'" % repr(value))
 
