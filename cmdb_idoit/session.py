@@ -79,7 +79,7 @@ def __session_configure():
                   , 'X-RPC-Auth-Password': password
                   , 'content-type': 'application/json'
                   }
-    session.headers.update(auth_header)
+    session.headers = auth_header
 
     payload = { "id": 1 ,"method": "idoit.login", "params": { 'apikey': apikey }, "version": "2.0" }
     response = session.post(url, data=json.dumps(payload,default=__json_serial), stream=False)
@@ -88,12 +88,12 @@ def __session_configure():
 
     session_header = {'content-type': 'application/json'}
 
-    if 'session-id' in response.json():
+    if 'session-id' in rj['result']:
         session_header['X-RPC-Auth-Session'] = rj['result']['session-id']
     else:
         session.auth = requests.auth.HTTPBasicAuth(username, password)
 
-    session.headers.update(session_header)
+    session.headers = session_header
 
 
 def __json_serial(obj):
