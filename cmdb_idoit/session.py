@@ -196,6 +196,8 @@ def __request(parameters,raise_errors,store_errors=False):
 
     logging.debug('request_payload:' + json.dumps(payload, sort_keys=True, indent=4,default=__json_serial))
     response = session.post(url, data=json.dumps(payload,default=__json_serial), stream=False)
+    logging.debug(response.request.headers)
+    logging.debug(response.headers)
     session_stats['requests'] += 1
     session_stats['queries'] += len(payload)
 
