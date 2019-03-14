@@ -184,6 +184,8 @@ class CMDBObject(collections.abc.Mapping):
         else:
             self.type = object_data
 
+        self._change_state = False
+
         # Fetch type information
         self.type_object = get_cmdb_type(self.type)
         self.fields = self.type_object.getObjectStructure()
@@ -257,7 +259,6 @@ class CMDBObject(collections.abc.Mapping):
             for fields in result:
                 self.fields[category_const]._fill_category_data(fields)
 
-        self._change_state = True
         self.field_data_fetched[category_const] = True
 
     def hasTypeCategory(self, category_const):
@@ -272,11 +273,10 @@ class CMDBObject(collections.abc.Mapping):
         return self.fields.keys()
 
     def __setattr__(self, name, value):
-        try:
-            if self.__dict__[name] != value:
+        # Check if attribute should be tracked.
+        if name in [ 'id', 'sys_id','title','status','type']:
+            if name not in self.__dict__ or self.__dict__[name] != value:
                 self.__dict__['_change_state'] = True
-        except KeyError:
-            pass
         self.__dict__[name] = value
 
     def __repr__(self):
