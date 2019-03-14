@@ -327,7 +327,8 @@ class CMDBObject(collections.abc.Mapping):
 
         is_create = self.id is None
 
-        if self.hasChanged():
+        # Check if object attributes has been changed
+        if self._change_state:
             parameter = dict()
             if not is_create:
                 parameter['id'] = self.id
