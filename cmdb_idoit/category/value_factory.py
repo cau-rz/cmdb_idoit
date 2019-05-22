@@ -94,8 +94,11 @@ def type_determination(category,key):
                 return (list,float)
 
     # otherwise guess the type
-    data_type = category.getFieldObject(key)['data']['type']
-    info_type = category.getFieldObject(key)['info']['type']
+    try:
+        data_type = category.getFieldObject(key)['data']['type']
+        info_type = category.getFieldObject(key)['info']['type']
+    except Exception as e:
+        raise Exception(f"Missing values for category { category.get_const() } and key { key }",e)
 
     base_type = None
     if data_type == 'int':
