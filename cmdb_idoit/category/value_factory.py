@@ -17,6 +17,8 @@
 
 from .conversion import *
 
+from cmdb_idoit.exceptions import CMDBMissingTypeInformation
+
 import pkg_resources
 import re
 import jsonpath_ng
@@ -98,7 +100,7 @@ def type_determination(category,key):
         data_type = category.getFieldObject(key)['data']['type']
         info_type = category.getFieldObject(key)['info']['type']
     except Exception as e:
-        raise Exception(f"Missing values for category { category.get_const() } and key { key }",e)
+        raise CMDBMissingTypeInformation(f"Missing type informations for { key } in { category.get_const() }",e)
 
     base_type = None
     if data_type == 'int':

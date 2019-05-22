@@ -21,7 +21,7 @@ import textwrap
 from cmdb_idoit.session import *
 from cmdb_idoit.category.value_factory import *
 
-from cmdb_idoit.exceptions import CMDBNoneAPICategory
+from cmdb_idoit.exceptions import CMDBNoneAPICategory, CMDBMissingTypeInformation
 
 
 class CMDBCategoryCache(dict):
@@ -340,7 +340,13 @@ class CMDBCategoryValues(dict):
         self.markUnchanged()
 
         for key in self.category.getFields():
-            self.field_type[key] = type_determination(self.category, key)
+            try:
+                self.field_type[key] = type_determination(self.category, key)
+            except CMDBMissingTypeInformation as e:
+                logging.exception(e)
+                logging.warning(f"Ignore field { key } in category { self.category.get_const() }")
+                del self.field_data[key]
+                del self.field_type[key]
 
     def _fill_category_data(self, fields):
         self.id = fields['id']
