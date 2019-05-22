@@ -157,8 +157,6 @@ def type_repr(type_desc):
 def value_representation_factory(category,key,value = None):
     rules = _get_rules()
     category_const = category.get_const()
-    data_type = category.getFieldObject(key)['data']['type']
-    info_type = category.getFieldObject(key)['info']['type']
     if value == False:
         value = None
     if isinstance(value,list) and len(value) == 0:
@@ -171,6 +169,12 @@ def value_representation_factory(category,key,value = None):
             if value is not None:
                 matches = _apply_rule(rules[category_const][key],value)
                 if len(matches) == 0:
+                    field_object = category.getFieldObject(key)
+                    if not 'type' in field_object['data']:
+                        data_type = "not defined"
+                    else:
+                        data_type = field_object['data']['type']
+
                     logging.fatal(textwrap.dedent(f"""\
                             There was a fatal error applying a representation mapping for {category_const}.{key}.
                             According to the API the type of this attribute is "{data_type}" the mapping suggested
