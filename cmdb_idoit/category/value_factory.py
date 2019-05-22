@@ -165,10 +165,10 @@ def value_representation_factory(category,key,value = None):
         value = None
     if isinstance(value,list) and isinstance(value[0],list) and len(value[0]) == 0:
         value = None
-    if value is not None:
-        if category_const in rules:
-            if key in rules[category_const]:
-                itype = rules[category_const][key]['type']
+    if category_const in rules:
+        if key in rules[category_const]:
+            itype = rules[category_const][key]['type']
+            if value is not None:
                 matches = _apply_rule(rules[category_const][key],value)
                 if len(matches) == 0:
                     logging.fatal(textwrap.dedent(f"""\
@@ -182,36 +182,39 @@ def value_representation_factory(category,key,value = None):
                             or we do something utterly wrong.
                             """))
                     raise Exception("Error matching value,",rules[category_const][key]['path'],str(value))
-                if itype == 'int':
-                    # Dialog Handling?
-                    if len(matches) == 1:
-                      return conver_integer(matches.pop().value)
-                    raise Exception("Expected one element but got multiple:",str(value))
-                elif itype == 'list_int':
-                    return conver_list(conver_integer,[match.value for match in matches])
-                elif itype == 'double':
-                    if len(matches) == 1:
-                        return conver_float(matches.pop().value)
-                elif itype == 'gps':
-                    if len(matches) == 1:
-                      return conver_gps(matches.pop().value)
-                    raise Exception("Expected one element but got multiple:",str(value))
-                elif itype == 'text':
-                    if len(matches) == 1:
-                      return conver_string(matches.pop().value)
-                    raise Exception("Expected one element but got multiple:",str(value))
-                elif itype == 'list_text':
-                    if len(matches) >= 1:
-                        return conver_list(conver_string,[match.value for match in matches])
-                    raise Exception("Expected one element but got multiple:",str(value))
-                elif itype == 'money':
-                    if len(matches) == 1:
-                      return conver_money(matches.pop().value)
-                    raise exception("Expected one element but got multiple:",str(value))
-                elif itype == 'dialog':
-                    if len(matches) == 1:
-                      return conver_dialog(matches.pop().value)
-                    raise exception("Expected one element but got multiple:",str(value))
+                match_values = [match.value for match in matches]
+            else:
+                match_values = [None]
+            if itype == 'int':
+                # Dialog Handling?
+                if len(match_values) == 1:
+                  return conver_integer(match_values.pop())
+                raise Exception("Expected one element but got multiple:",str(value))
+            elif itype == 'list_int':
+                return conver_list(conver_integer, match_values)
+            elif itype == 'double':
+                if len(match_values) == 1:
+                    return conver_float(match_values.pop())
+            elif itype == 'gps':
+                if len(match_values) == 1:
+                  return conver_gps(match_values.pop())
+                raise Exception("Expected one element but got multiple:",str(value))
+            elif itype == 'text':
+                if len(match_values) == 1:
+                  return conver_string(match_values.pop())
+                raise Exception("Expected one element but got multiple:",str(value))
+            elif itype == 'list_text':
+                if len(match_values) >= 1:
+                    return conver_list(conver_string, match_values)
+                raise Exception("Expected one element but got multiple:",str(value))
+            elif itype == 'money':
+                if len(match_values) == 1:
+                  return conver_money(match_values.pop())
+                raise exception("Expected one element but got multiple:",str(value))
+            elif itype == 'dialog':
+                if len(match_values) == 1:
+                  return conver_dialog(match_values.pop())
+                raise exception("Expected one element but got multiple:",str(value))
     return value_representation_factory_by_data_info(category.getFieldObject(key),value)
 
 def value_representation_factory_by_data_info(field_object, value=None):
