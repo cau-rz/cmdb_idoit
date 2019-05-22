@@ -151,6 +151,7 @@ class CMDBCategory(dict):
         self.category_type = category_type
         self.custom_category = False
         self.fields = dict()
+        self.field_type = dict()
 
         parameter = dict()
         if self.is_global_category():
@@ -179,6 +180,14 @@ class CMDBCategory(dict):
             else:
                 logging.debug('Not caching category %s' % self.const)
 
+        # Determine types for all fields
+        for key in list(self.getFields()):
+            try:
+                self.field_type[key] = type_determination(self, key)
+            except CMDBMissingTypeInformation as e:
+                logging.exception(e)
+                logging.warning(f"Ignore field { key } in category { self.get_const() }")
+                del self.fields[key]
 
     def get_id(self):
         """
@@ -203,6 +212,13 @@ class CMDBCategory(dict):
         Return the list of fields of a category.
         """
         return self.fields.keys()
+
+    def getFieldType(self, index):
+        return self.field_type[index]
+
+    def getFieldTypes(self):
+        return self.field_type
+
 
     def getFieldObject(self,index):
         """
@@ -329,7 +345,7 @@ class CMDBCategoryValues(dict):
     def __init__(self, category):
         self.id = None
         self.category = category
-        self.field_type = dict()
+        self.field_type = category.getFieldTypes()
         self.field_data = dict()
         """
         Store the update/change state for each field in the values set of a category.
@@ -339,14 +355,6 @@ class CMDBCategoryValues(dict):
         self._change_state = dict()
         self.markUnchanged()
 
-        for key in self.category.getFields():
-            try:
-                self.field_type[key] = type_determination(self.category, key)
-            except CMDBMissingTypeInformation as e:
-                logging.exception(e)
-                logging.warning(f"Ignore field { key } in category { self.category.get_const() }")
-                del self.field_data[key]
-                del self.field_type[key]
 
     def _fill_category_data(self, fields):
         self.id = fields['id']
