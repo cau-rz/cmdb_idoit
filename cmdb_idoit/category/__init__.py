@@ -201,7 +201,7 @@ class CMDBCategory(dict):
         """
         return self.const
 
-    def hasfield(self, index):
+    def hasField(self, index):
         """
         Check if a category has a given field.
         """
@@ -361,8 +361,9 @@ class CMDBCategoryValues(dict):
         for key in self.category.getFields():
             try:
                 if key in fields:
-                    value = value_representation_factory(self.category, key, fields[key])
-                    dict.__setitem__(self, key, value)
+                    if self.category.hasField(key):
+                        value = value_representation_factory(self.category, key, fields[key])
+                        dict.__setitem__(self, key, value)
             except ConversionException as e:
                 logging.fatal(textwrap.dedent("""\
                               There was a fatal error while deriving a representativ value for %(category)s.%(attribute)s.
@@ -380,7 +381,7 @@ class CMDBCategoryValues(dict):
         self.markUnchanged()
 
     def __setitem__(self, index, value):
-        if self.category.hasfield(index):
+        if self.category.hasField(index):
             try:
               type_check(self.field_type[index],value)
             except Exception as e:
@@ -400,7 +401,7 @@ class CMDBCategoryValues(dict):
         try:
             return dict.__getitem__(self, index)
         except KeyError as e:
-            if self.category.hasfield(index):
+            if self.category.hasField(index):
                 return None
             else:
                 raise e
