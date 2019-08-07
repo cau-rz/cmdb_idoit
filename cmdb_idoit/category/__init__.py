@@ -22,40 +22,7 @@ from cmdb_idoit.session import *
 from cmdb_idoit.category.value_factory import *
 
 from cmdb_idoit.exceptions import CMDBNoneAPICategory, CMDBMissingTypeInformation
-
-
-class CMDBCategoryCache(dict):
-    """
-    A special `dict` for caching `CMDBCategory`'s.
-    """
-
-    def __init__(self):
-        self.none_api_category = list()
-        self.type_to_category = dict()
-
-    def __setitem__(self, key, value):
-        if not type(value) is CMDBCategory:
-            raise TypeError("Object is not of type CMDBCategory")
-        if key in self.type_to_category:
-            dict.__setitem__(self, self.type_to_category[key], value)
-        else:
-            self.type_to_category[value.id] = value.const
-            dict.__setitem__(self, key, value)
-
-    def __getitem__(self, key):
-        if key in self.type_to_category:
-            return dict.__getitem__(self, self.type_to_category[key])
-        else:
-            return dict.__getitem__(self, key)
-
-    def isNoneAPICategory(self,key):
-        return key in self.none_api_category
-
-    def setNoneAPICategory(self, key):
-        self.none_api_category.append(key)
-
-
-cmdbCategoryCache = CMDBCategoryCache()
+from cmdb_idoit.category.cache import cmdbCategoryCache, is_categorie_cached
 
 
 class CMDBCategoryType(Enum):
