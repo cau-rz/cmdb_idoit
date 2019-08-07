@@ -60,6 +60,7 @@ C__CATG__GLOBAL purpose int $.id
 C__CATG__GLOBAL status int $.id
 C__CATG__GLOBAL tag list_int $[*].id
 C__CATG__GLOBAL type int $.id
+C__CATG__GLOBAL title text $
 C__CATG__GROUP_MEMBERSHIPS connected_object int $.id
 C__CATG__GUEST_SYSTEMS connected_object int $.id
 C__CATG__GUEST_SYSTEMS hostname text $.title
