@@ -18,6 +18,7 @@
 from .conversion import *
 
 from cmdb_idoit.exceptions import CMDBMissingTypeInformation
+from cmdb_idoit.session import request
 
 import pkg_resources
 import re
@@ -32,9 +33,14 @@ def _get_rules():
     if rules != None:
         return rules
 
+    # request i-doit version
+    result = request("idoit.version",{})
+    if 'version' not in result:
+        raise Exception("Can't determine idoit version")
+    version = result['version'].split('.')
+
     resource_package = __name__  # Could be any module/package name
-    # TODO We need a version selector in here, now just migrate to the new version.
-    resource_path = '/'.join(('map', '1_12_0.map'))  # Do not use os.path.join(), see below
+    resource_path = '/'.join(('map', f"{version[0]}_{version[1]}.map"))  # Do not use os.path.join(), see below
 
     template = pkg_resources.resource_string(resource_package, resource_path)
     rules = dict()
