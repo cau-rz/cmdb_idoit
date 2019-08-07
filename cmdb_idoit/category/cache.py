@@ -14,6 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with cmdb_idoit.  If not, see <http://www.gnu.org/licenses/>.
 """
+from cmdb_idoit.category.category import CMDBCategory
 
 class CMDBCategoryCache(dict):
     """
