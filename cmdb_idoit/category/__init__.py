@@ -17,7 +17,8 @@
 
 import textwrap
 
-from cmdb_idoit.session import *
+from cmdb_idoit.session import multi_requests
+from cmdb_idoit.exceptions import CMDBNoneAPICategory, CMDBRequestError
 from cmdb_idoit.category.value_factory import *
 
 from cmdb_idoit.category.cache import cmdbCategoryCache, is_categorie_cached
@@ -43,9 +44,9 @@ def get_category(category_const, category_id=None, category_type=CMDBCategoryTyp
     elif cmdbCategoryCache.isNoneAPICategory(category_const):
         raise CMDBNoneAPICategory(f"Category { category_const } cannot be handled by API, cached result!")
     elif category_id:
-        return CMDBCategory(category_id, category_const, category_type)
+        return __load_category(category_id, category_const, category_type)
     else:
-        return CMDBCategory(None,category_const,CMDBCategoryType.type_custom)
+        return __load_category(None,category_const,CMDBCategoryType.type_custom)
 
 
 def is_categorie_cached(category_const):
@@ -85,10 +86,26 @@ def fetch_categories(categories):
         if categorie['global'] == CMDBCategoryType.type_custom:
             key = 'c' + str(categorie['id'])
         if key in results:
-            category_object = CMDBCategory(categorie['id'], categorie['const'], categorie['global'], results[key])
+            category_object = __load_category(categorie['id'], categorie['const'], categorie['global'], results[key])
             fetched.append(category_object)
         elif is_categorie_cached(categorie['const']):
                 fetched.append(get_category(categorie['const']))
 
     return fetched
+
+def __load_category(ident,const,*vargs,**kargs):
+    try:
+        category_object = CMDBCategory(ident,const,*vargs,**kargs)
+        if not is_categorie_cached(category_object.const):
+            if category_object.id != None:
+                logging.debug('Caching category %s' % category_object.const)
+                cmdbCategoryCache[category_object.const] = category_object
+            else:
+                logging.debug('Not caching category %s' % category_object.const)
+        return category_object
+    except CMDBRequestError as e:
+        if e.errnr == -32099:
+            logging.warning(f"Category { const } cannot be handled by API.")
+            cmdbCategoryCache.setNoneAPICategory(const)
+            raise CMDBNoneAPICategory(e.message)
 

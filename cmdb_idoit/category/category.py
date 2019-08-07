@@ -63,23 +63,10 @@ class CMDBCategory(dict):
             parameter['category'] = self.const
 
         if result is None:
-            try:
-                result = request('cmdb.category_info', parameter)
-            except CMDBRequestError as e:
-                if e.errnr == -32099:
-                    logging.warning(f"Category { self.const } cannot be handled by API.")
-                    cmdbCategoryCache.setNoneAPICategory(self.const)
-                    raise CMDBNoneAPICategory(e.message)
+            result = request('cmdb.category_info', parameter)
 
         if type(result) is dict:
             self.fields = result
-
-        if not is_categorie_cached(self.const):
-            if self.id != None:
-                logging.debug('Caching category %s' % self.const)
-                cmdbCategoryCache[self.const] = self
-            else:
-                logging.debug('Not caching category %s' % self.const)
 
         # Determine types for all fields
         for key in list(self.getFields()):

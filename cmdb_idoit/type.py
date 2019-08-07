@@ -16,8 +16,10 @@
 """
 
 from .session import *
-from .category import *
-from .exceptions import CMDBUnkownType
+from .exceptions import CMDBUnkownType, CMDBNoneAPICategory
+
+from cmdb_idoit.category import get_category, fetch_categories
+from cmdb_idoit.category.category import CMDBCategoryType
 
 import collections.abc
 
