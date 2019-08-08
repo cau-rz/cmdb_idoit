@@ -205,9 +205,7 @@ class CMDBCategoryValuesList(list):
             return value
         elif isinstance(value, dict):
             cat_value = CMDBCategoryValues(self.category)
-
-            for k, v in value.items():
-                cat_value[k] = v
+            cat_value._fill_category_data(value)
 
             return cat_value
         else:
