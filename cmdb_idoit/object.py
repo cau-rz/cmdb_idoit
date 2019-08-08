@@ -298,7 +298,7 @@ class CMDBObject(collections.abc.Mapping):
     def __iter__(self):
         return self.fields.__iter__()
 
-    def markChanged():
+    def markChanged(self):
         """
         Mark all fields in all loaded Categories as changed.
         So we when save is called we will rewrite all data.

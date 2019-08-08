@@ -227,7 +227,7 @@ class CMDBCategoryValuesList(collections.abc.MutableSequence):
         Change the update marker for all fields in all instanciations of the category.
         """
         for value in self.items:
-            value.markChanged(state)
+            value.markChanged()
 
     def hasChanged(self):
         """
@@ -330,7 +330,7 @@ class CMDBCategoryValues(collections.abc.MutableMapping):
     def hasFieldChanged(self, key):
         return self._change_state[key]
 
-    def markFieldsChanged(self):
+    def markChanged(self):
         """
         Marks all fields of this CategoryValue to be changed.
         Hence a save operation would save them all.
