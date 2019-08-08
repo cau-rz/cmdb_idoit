@@ -17,6 +17,7 @@
 
 from enum import Enum
 import logging
+import collections.abc
 
 from cmdb_idoit.session import request, requests
 from cmdb_idoit.exceptions import CMDBNoneAPICategory, CMDBMissingTypeInformation, CMDBConversionException
@@ -43,7 +44,7 @@ class CMDBCategoryType(Enum):
     type_custom = 3   #: Custom category kind, this kind of categories are user defined and may be unique to a idoit instance.
 
 
-class CMDBCategory(dict):
+class CMDBCategory:
     """
     A model representing a CMDB category.
 
@@ -160,45 +161,55 @@ class CMDBCategory(dict):
 
 
 
-class CMDBCategoryValuesList(list):
+class CMDBCategoryValuesList(collections.abc.MutableSequence):
     """
     A model of a multi value category of an object.
     """
 
     def __init__(self, category):
         self.category = category
+        self.items = list()
         self.deleted_items = list()
+
+    def __getitem__(self, index):
+        return self.items[index]
+
+    def __len__(self):
+        return len(self.items)
 
     def __setitem__(self, index, value):
         cat_value = self._dict_to_catval(value)
-        list.__setitem__(self, index, cat_value)
+        self.items[index] = cat_value
+
+    def insert(self,index,item):
+        cat_item = self._dict_to_catval(item)
+        self.items.insert(index,cat_item)
+
+    def _is_item_saved(item):
+        return isinstance(item, CMDBCategoryValues) and item.id is not None
 
     def __delitem__(self, index):
+
         if isinstance(index, slice):
-            for x in sorted(range(0, len(self))[index], reverse=True):
-                del self[x]
-        else:
-            item = list.__getitem__(self, index)
-            if isinstance(item, CMDBCategoryValues) and item.id:
+            delete = list(filter(self._is_item_saved,self.items[index]))
+            for item in delete:
                 logging.debug("Add %s[%s] to deleted items" % (self.category.const,item.id))
-                self.deleted_items.append(item)
-            list.__delitem__(self, index)
+            self.deleted_items.extend(delete)
+            del self.items[index]
+        else:
+            if self._is_item_saved(self.items[index]):
+                logging.debug("Add %s[%s] to deleted items" % (self.category.const,items[index].id))
+                self.deleted_items.append(self.items[index])
+            del self.items[index]
 
     def remove(self, item):
         """
         Remove category instanciation from list.
         """
-        if isinstance(item, CMDBCategoryValues) and item.id:
+        if self._is_item_saved(item):
             logging.debug("Add %s[%s] to deleted items" % (self.category.const,item.id))
             self.deleted_items.append(item)
-        list.remove(self,item)
-
-    def append(self, value):
-        """
-        Append an instanciation to the list.
-        """
-        cat_value = self._dict_to_catval(value)
-        list.append(self, cat_value)
+        self.items.remove(self,item)
 
     def _dict_to_catval(self, value):
         if isinstance(value, CMDBCategoryValues):
@@ -215,20 +226,20 @@ class CMDBCategoryValuesList(list):
         """
         Change the update marker for all fields in all instanciations of the category.
         """
-        for value in self:
+        for value in self.items:
             value.markChanged(state)
 
     def hasChanged(self):
         """
         Check if any of the instanciations of the category has a field which is marked updated.
         """
-        for value in self:
+        for value in self.items:
             if value.hasChanged():
                 return True
         return False
 
 
-class CMDBCategoryValues(dict):
+class CMDBCategoryValues(collections.abc.MutableMapping):
     """
     A model of category data of an object.
     """
@@ -254,7 +265,7 @@ class CMDBCategoryValues(dict):
                 if key in fields:
                     if self.category.hasField(key):
                         value = value_representation_factory(self.category, key, fields[key])
-                        dict.__setitem__(self, key, value)
+                        self.field_data[key] =  value
             except CMDBConversionException as e:
                 logging.fatal(textwrap.dedent("""\
                               There was a fatal error while deriving a representativ value for %(category)s.%(attribute)s.
@@ -278,35 +289,33 @@ class CMDBCategoryValues(dict):
             except Exception as e:
                 logging.error("Type check of index %s has failed" % index)
                 raise e
-            if dict.__contains__(self,index):
-               old_value = dict.__getitem__(self,index)
+            if index in self.field_data:
+               old_value = self.field_data[index]
             else:
                old_value = None
             if old_value != value:
                 self.markFieldChanged(index)
-                dict.__setitem__(self, index, value)
+                self.field_data[index] = value
         else:
             raise KeyError("Category " + self.category.const + " has no field " + index)
 
     def __getitem__(self, index):
         try:
-            return dict.__getitem__(self, index)
+            return self.field_data[index]
         except KeyError as e:
             if self.category.hasField(index):
                 return None
             else:
                 raise e
+    
+    def __delitem__(self, index):
+        raise NotImplementedError()
 
-    def items(self):
-        keys = dict.keys(self)
-        return [(key, self[key]) for key in keys]
+    def __len__(self):
+        return len(self.field_data)
 
-    def values(self):
-        return [value.store() for key, value in dict.items(self)]
-
-    def update(self, other_dict):
-        for key, val in other_dict.items():
-            self[key] = val
+    def __iter__(self):
+        return iter(self.field_data)
 
     def markFieldChanged(self,key):
         self._change_state[key] = True
