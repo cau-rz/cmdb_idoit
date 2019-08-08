@@ -90,7 +90,7 @@ def get_type_const_from_id(type_id):
     return cmdb_type.get_const()
 
 
-class CMDBType(dict):
+class CMDBType:
 
     class CMDBTypeCategoryInclusion:
         multi_value = None
