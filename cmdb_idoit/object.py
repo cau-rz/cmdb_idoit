@@ -252,9 +252,7 @@ class CMDBObject(collections.abc.Mapping):
 
         if multi_value:
             for fields in result:
-                entry = CMDBCategoryValues(category_object)
-                entry._fill_category_data(fields)
-                self.fields[category_const].append(entry)
+                self.fields[category_const].append(fields)
         else:
             for fields in result:
                 self.fields[category_const]._fill_category_data(fields)
