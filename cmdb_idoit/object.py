@@ -343,23 +343,6 @@ class CMDBObject(collections.abc.Mapping):
 
         requests = dict()
 
-        def _category_save_parameters(category,field):
-            category_const = category.get_const()
-            method = None
-            entry_id = None
-            parameter_data = dict()
-            for key, value in field.items():
-                logging.debug("%s[%s](%s)=%s" % (category_const, key, category.get_field_data_type(key), str(value)))
-                if field.hasFieldChanged(key):
-                    parameter_data[key] = value
-            if field.id is not None:
-                method = "cmdb.category.save"
-                entry_id = field.id
-            else:
-                method = "cmdb.category.save"
-
-            return (method,entry_id,parameter_data)
-
         for category_const,category_fields in self.fields.items():
             category = category_fields.category
 
@@ -383,7 +366,7 @@ class CMDBObject(collections.abc.Mapping):
                 for field in category_fields:
                     if field.hasChanged():
                         # Receive changeset and processing method and queue the request
-                        (method,entry_id,data) = _category_save_parameters(category,field)
+                        (method,entry_id,data) = field.getChangeSet()
                         parameter = parameter_template.copy()
                         if entry_id is not None:
                             parameter['entry'] = entry_id
@@ -401,7 +384,7 @@ class CMDBObject(collections.abc.Mapping):
                         requests[len(requests)] = {'method': "cmdb.category.delete", 'parameter': parameter}
             elif category_fields.hasChanged():
                 # Receive changeset and processing method and queue the request
-                (method,entry_id,data) = _category_save_parameters(category,category_fields)
+                (method,entry_id,data) = field.getChangeSet()
                 parameter = parameter_template.copy()
                 parameter['data'] = data
                 requests[len(requests)] = {'method': method, 'parameter': parameter}

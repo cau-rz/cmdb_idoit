@@ -317,6 +317,10 @@ class CMDBCategoryValues(collections.abc.MutableMapping):
     def __iter__(self):
         return iter(self.field_data)
 
+    def getChangeSet(self):
+        parameter_data = dict(filter(lambda k,v: self.hasFieldChanged(k),self.items()))
+        return ("cmdb.category.save",self.id,parameter_data)
+
     def markFieldChanged(self,key):
         self._change_state[key] = True
 
