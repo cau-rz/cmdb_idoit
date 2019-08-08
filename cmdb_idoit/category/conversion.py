@@ -18,8 +18,7 @@
 import datetime
 import logging
 
-class ConversionException(Exception):
-    pass
+from cmdb_idoit.exceptions import CMDBConversionException
 
 def conver_list(func,values):
     if values is None:
@@ -27,7 +26,7 @@ def conver_list(func,values):
     elif isinstance(values,list):
         return [ func(value) for value in values ]
     else:
-        raise ConversionException("Expected value of type list, but instead it has type %s '%s'" % (type(values),repr(values)))
+        raise CMDBConversionException("Expected value of type list, but instead it has type %s '%s'" % (type(values),repr(values)))
 
 def conver_integer(value):
     if value is None:
@@ -42,7 +41,7 @@ def conver_integer(value):
     elif isinstance(value,int):
         return value
     else:
-        raise ConversionException("Conversion of none string to integer is not supported '%s'" % repr(value))
+        raise CMDBConversionException("CMDBConversion of none string to integer is not supported '%s'" % repr(value))
 
 def conver_string(value):
     if value is None:
@@ -50,7 +49,7 @@ def conver_string(value):
     elif isinstance(value,str):
         return value
     else:
-        raise ConversionException("Value is not of type string, but instead of type %s '%s'" % (type(value),repr(value)))
+        raise CMDBConversionException("Value is not of type string, but instead of type %s '%s'" % (type(value),repr(value)))
 
 def conver_float(value):
     if value is None:
@@ -66,7 +65,7 @@ def conver_float(value):
         except Exception as e:
             logging.warning("Can't covert %s to float" % value,e)
     else:
-        raise ConversionException("Conversion of none string/int (%s) to float is not supported '%s'" % (type(value),repr(value)))
+        raise CMDBConversionException("Conversion of none string/int (%s) to float is not supported '%s'" % (type(value),repr(value)))
 
 def conver_money(value):
     if value is None:
@@ -85,7 +84,7 @@ def conver_money(value):
         except Exception as e:
             logging.warning("Can't covert %s to float/money" % value,e)
     else:
-        raise ConversionException("Conversion of none string to float/money is not supported '%s'" % repr(value))
+        raise CMDBConversionException("Conversion of none string to float/money is not supported '%s'" % repr(value))
 
 def conver_datetime(value):
     if value is None:
@@ -109,7 +108,7 @@ def conver_datetime(value):
             pass
         logging.warning(f"Conversion of '{ value }' to datetime is not supported")
     else:
-        raise ConversionException("Conversion of none string to datetime is not supported '%s'" % repr(value))
+        raise CMDBConversionException("Conversion of none string to datetime is not supported '%s'" % repr(value))
 
 def conver_date(value):
     if value is None:
@@ -122,7 +121,7 @@ def conver_date(value):
         except Exception as e:
             logging.warning(e)
     else:
-        raise ConversionException("Conversion of none string to datetime is not supported '%s'" % repr(value))
+        raise CMDBConversionException("Conversion of none string to datetime is not supported '%s'" % repr(value))
 
 def conver_dialog(value):
     return conver_integer(value)
@@ -135,4 +134,4 @@ def conver_gps(value):
         longitude = value['longitude']
         return {'latitude': latitude, 'longitude': longitude }
     else:
-        raise ConversionException("Value is not of type dict, but instead of type %s '%s'" % (type(value),repr(value)))
+        raise CMDBConversionException("Value is not of type dict, but instead of type %s '%s'" % (type(value),repr(value)))

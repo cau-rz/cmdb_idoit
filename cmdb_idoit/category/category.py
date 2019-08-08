@@ -257,7 +257,7 @@ class CMDBCategoryValues(dict):
                     if self.category.hasField(key):
                         value = value_representation_factory(self.category, key, fields[key])
                         dict.__setitem__(self, key, value)
-            except ConversionException as e:
+            except CMDBConversionException as e:
                 logging.fatal(textwrap.dedent("""\
                               There was a fatal error while deriving a representativ value for %(category)s.%(attribute)s.
                               According to the API the type of this attribute is '%(type)s', but it was not possible to 
