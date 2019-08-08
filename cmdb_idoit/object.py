@@ -361,36 +361,29 @@ class CMDBObject(collections.abc.Mapping):
             parameter_template['object'] = self.id
             parameter_template['category'] = category_const
 
-            if isinstance(category_fields,CMDBCategoryValuesList):
-                # Process changed entries
-                for field in category_fields:
-                    if field.hasChanged():
-                        # Receive changeset and processing method and queue the request
-                        (method,entry_id,data) = field.getChangeSet()
-                        parameter = parameter_template.copy()
-                        if entry_id is not None:
-                            parameter['entry'] = entry_id
+            changeset = category_fields.getChangeSet()
+
+            if isinstance(changeset,list):
+                for change in changeset:
+                    (method,entry_id,data) = change
+                    parameter = parameter_template.copy()
+                    if entry_id is not None:
+                        parameter['entry'] = entry_id
+                    if data is not None:
                         parameter['data'] = data
-                        requests[len(requests)] = {'method': method, 'parameter': parameter}
-                        # Update the field update state. This should happen after processing the requests
-                        field.markUnchanged()
-                # Process removed entries
-                for field in category_fields.deleted_items:
-                    if field.id is not None:
-                        parameter = parameter_template.copy()
-                        logging.debug("Delete %s[%s]" % (category_const, str(field.id)))
-                        method = "cmdb.category.delete"
-                        parameter['entry'] = field.id
-                        requests[len(requests)] = {'method': "cmdb.category.delete", 'parameter': parameter}
-            elif category_fields.hasChanged():
-                # Receive changeset and processing method and queue the request
-                (method,entry_id,data) = field.getChangeSet()
-                parameter = parameter_template.copy()
-                parameter['data'] = data
-                requests[len(requests)] = {'method': method, 'parameter': parameter}
-                # Update the field update state. This should happen after processing the requests
-                category_fields.markUnchanged()
+                    requests[len(requests)] = {'method': method, 'parameter': parameter}
             else:
-                logging.debug("Category %s of Object %s has no updates skipping" % (category_const, self.id))
+                (method,entry_id,data) = changeset
+                if len(data) > 0:
+                    parameter = parameter_template.copy()
+                    parameter['data'] = data
+                    requests[len(requests)] = {'method': method, 'parameter': parameter}
+                else:
+                    logging.debug("Category %s of Object %s has no updates skipping" % (category_const, self.id))
+
+            # Update the field update state. 
+            # This should happen after processing the requests,
+            # but currently we do not process the output of the save process.
+            category_fields.markUnchanged()
 
         multi_method_request(requests)

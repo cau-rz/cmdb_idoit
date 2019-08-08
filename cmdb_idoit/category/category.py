@@ -222,12 +222,30 @@ class CMDBCategoryValuesList(collections.abc.MutableSequence):
         else:
             raise TypeError("CMDBCategoryValuesList works only with dict or CMDBCategoryValues, but not with %s" % type(value))
 
-    def markChanged(self, state=True):
+    def getChangeSet(self):
+        """
+        Generates a changeset for this category values list object.
+        A changeset is a list of tuples consiting in a method, the object id and the changed data.
+        """
+        changeset = list()
+        changeset.extend(map(lambda item: item.getChangeSet(),self.items))
+        changeset.extend(map(lambda item: ("cmdb.category.delete", item.id, None), self.deleted_items))
+        return changeset
+
+
+    def markChanged(self):
         """
         Change the update marker for all fields in all instanciations of the category.
         """
         for value in self.items:
             value.markChanged()
+
+    def markUnchanged(self):
+        """
+        Change the update marker for all fields in all instanciations of the category.
+        """
+        for value in self.items:
+            value.markUnchanged()
 
     def hasChanged(self):
         """
@@ -318,7 +336,11 @@ class CMDBCategoryValues(collections.abc.MutableMapping):
         return iter(self.field_data)
 
     def getChangeSet(self):
-        parameter_data = dict(filter(lambda k,v: self.hasFieldChanged(k),self.items()))
+        """
+        Generates a changeset for this category values object.
+        A changeset consists from a method, the object id and the changed data.
+        """
+        parameter_data = dict(filter(lambda k: self.hasFieldChanged(k[0]),self.items()))
         return ("cmdb.category.save",self.id,parameter_data)
 
     def markFieldChanged(self,key):
