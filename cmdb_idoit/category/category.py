@@ -28,6 +28,12 @@ def getCategoryValueObject(category,multi_value):
     else:
         return CMDBCategoryValues(category)
 
+def getCategoryValueObject(category,multi_value):
+    if multi_value:
+        return CMDBCategoryValuesList(category)
+    else:
+        return CMDBCategoryValues(category)
+
 class CMDBCategoryType(Enum):
     """
     An enum for the kind of categories.
@@ -106,7 +112,6 @@ class CMDBCategory(dict):
 
     def getFieldTypes(self):
         return self.field_type
-
 
     def getFieldObject(self,index):
         """

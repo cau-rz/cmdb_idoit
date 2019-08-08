@@ -19,7 +19,7 @@ from .session import *
 from .exceptions import CMDBUnkownType, CMDBNoneAPICategory
 
 from cmdb_idoit.category import get_category, fetch_categories
-from cmdb_idoit.category.category import CMDBCategoryType
+from cmdb_idoit.category.category import CMDBCategoryType, getCategoryValueObject
 
 import collections.abc
 
@@ -197,10 +197,13 @@ class CMDBType(dict):
         """
         values = dict()
 
-        for category_object in list(self.global_categories.values()) + list(self.specific_categories.values()) + list(self.custom_categories.values()):
-            if category_object.multi_value:
-                values[category_object.category.get_const()] = CMDBCategoryValuesList(category_object.category)
-            else:
-                values[category_object.category.get_const()] = CMDBCategoryValues(category_object.category)
+        for category_object in  self.global_categories.values():
+            values[category_object.category.get_const()] = getCategoryValueObject(category_object.category,category_object.multi_value)
+
+        for category_object in  self.specific_categories.values():
+            values[category_object.category.get_const()] = getCategoryValueObject(category_object.category,category_object.multi_value)
+
+        for category_object in  self.custom_categories.values():
+            values[category_object.category.get_const()] = getCategoryValueObject(category_object.category,category_object.multi_value)
 
         return values
