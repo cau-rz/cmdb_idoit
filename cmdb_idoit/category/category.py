@@ -21,7 +21,7 @@ import collections.abc
 
 from cmdb_idoit.session import request, requests
 from cmdb_idoit.exceptions import CMDBNoneAPICategory, CMDBMissingTypeInformation, CMDBConversionException
-from cmdb_idoit.category.value_factory import type_determination, value_representation_factory, type_repr
+from cmdb_idoit.category.value_factory import type_determination, value_representation_factory, type_repr, type_check
 
 def getCategoryValueObject(category,multi_value):
     if multi_value:
