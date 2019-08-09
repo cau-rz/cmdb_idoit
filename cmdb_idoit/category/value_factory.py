@@ -191,19 +191,6 @@ def type_determination(category,key):
     return AttributeType(base_type,conv_func,False)
 
 
-def type_check(type_desc,value):
-    return type_desc.check(value)
-
-
-def type_repr(type_desc):
-    """
-    Return a representation string of the type description.
-
-    :param str type_desc: The type description a representation string is generated for.
-    """
-    return repr(type_desc)
-
-
 def value_representation_factory(category,key,value = None):
     category_const = category.get_const()
     attr_type = category.getFieldType(key)

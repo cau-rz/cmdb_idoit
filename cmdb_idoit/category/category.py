@@ -21,7 +21,7 @@ import collections.abc
 
 from cmdb_idoit.session import request, requests
 from cmdb_idoit.exceptions import CMDBNoneAPICategory, CMDBMissingTypeInformation, CMDBConversionException
-from cmdb_idoit.category.value_factory import type_determination, value_representation_factory, type_repr, type_check
+from cmdb_idoit.category.value_factory import type_determination, value_representation_factory
 
 def getCategoryValueObject(category,multi_value):
     if multi_value:
@@ -293,7 +293,7 @@ class CMDBCategoryValues(collections.abc.MutableMapping):
 
                               Either we do something ugly wrong or a mapping for this attribute is needed.
                               For more information consult the mitigation chapter in the documentation.""" 
-                              % { 'category': self.category.const, 'attribute': key, 'data': repr(fields[key]),'type': type_repr(self.field_type[key])}))
+                              % { 'category': self.category.const, 'attribute': key, 'data': repr(fields[key]),'type': repr(self.field_type[key])}))
                 raise e
 
         # Since this method should only be callend on a loading process, remark all fields to be unchanged 
@@ -302,7 +302,7 @@ class CMDBCategoryValues(collections.abc.MutableMapping):
     def __setitem__(self, index, value):
         if self.category.hasField(index):
             try:
-              type_check(self.field_type[index],value)
+              self.field_type[index].check(value)
             except Exception as e:
                 logging.error("Type check of index %s has failed" % index)
                 raise e

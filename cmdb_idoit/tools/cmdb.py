@@ -72,7 +72,7 @@ def _show_category_declaration(category, multi=False):
     if multi:
         print("  (list)",end="")
     for field in category.getFields():
-        field_type = cmdb.value_factory.type_repr(category.getFieldType(field))
+        field_type = repr(category.getFieldType(field))
         field_map  = cmdb.value_factory.get_type_mapping(category.const,field)
         print("\n    (%s) %s" % (field_type,field),end="")
         if field_map is not None:
