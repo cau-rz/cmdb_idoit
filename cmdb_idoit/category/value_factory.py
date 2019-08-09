@@ -63,6 +63,47 @@ def _apply_rule(rule,value):
         rule['jpath'] = jsonpath_ng.parse(rule['path']) 
     return rule['jpath'].find(value)
 
+class AttributeType:
+
+    def __init__(self,primary,conversion_function,is_list=None,rule=None):
+        self.primary = primary
+        self.conversion_function = conversion_function
+        self.is_list = is_list
+        self.rule = rule
+
+    def __call__(self,value):
+        if self.is_list:
+            return conver_list(self.conversion_function,value)
+        else:
+            return self.conversion_function(value)
+
+    def check(self,value):
+        if self.isList():
+            if not isinstance(value,list):
+                raise Exception("type check error '%s' is not a %s" % (value,type(self.encapsulate)))
+            else:
+                for element in value:
+                    if not isinstance(element,self.primary):
+                        raise Exception("type check error the inner elements of '%s' is of type and not of type %s" % (value,type(element),type(self.primary)))
+        elif not isinstance(value,self.primary):
+            raise Exception("type check error '%s' is of type %s and not of type %s" % (value,type(value),repr(self.primary)))
+        return True
+        
+    def isList(self):
+        return self.is_list
+
+    def hasRule(self):
+        return self.rule is not None
+
+    def getPrimaryType(self):
+        return self.primary
+
+    def __repr__(self):
+        if self.isList():
+            return "list of %s" % self.primary.__name__
+        else:
+            return self.primary.__name__
+
 
 def get_type_mapping(category_const,field_name):
     """
@@ -87,19 +128,26 @@ def type_determination(category,key):
     # Do we have an overwrite for this category,key combination
     if category_const in rules:
         if key in rules[category_const]:
-            type_string = rules[category_const][key]['type']
+            rule = rules[category_const][key]
+            type_string = rule['type']
             if type_string == 'int':
-                return int
+                return AttributeType(int,conver_integer,rule=rule)
             elif type_string == 'list_int':
-                return (list,int)
+                return AttributeType(int,conver_integer,True,rule=rule)
             elif type_string == 'text':
-                return str 
+                return AttributeType(str,conver_string,rule=rule)
             elif type_string == 'list_text':
-                return (list,str)
+                return AttributeType(str,conver_string,True,rule=rule)
             elif type_string == 'double':
-                return float
+                return AttributeType(float,conver_float,rule=rule)
             elif type_string == 'list_double':
-                return (list,float)
+                return AttributeType(float,conver_float,True,rule=rule)
+            elif type_string == 'gps':
+                return AttributeType(dict,conver_gps,rule=rule)
+            elif type_string == 'dialog':
+                return AttributeType(int,conver_dialog,rule=rule)
+            elif type_string == 'money':
+                return AttributeType(float,conver_money,rule=rule)
 
     # otherwise guess the type
     try:
@@ -109,43 +157,42 @@ def type_determination(category,key):
         raise CMDBMissingTypeInformation(f"Missing type informations for { key } in { category.get_const() }",e)
 
     base_type = None
+    conv_func = lambda x:x 
     if data_type == 'int':
         base_type = int
+        conv_func = conver_integer 
     elif data_type == 'float':
         base_type = float
+        conv_func = conver_float
     elif data_type == 'double':
         base_type = float
+        if info_type == 'money':
+            conv_func = conver_money
+        else:
+            conv_func = conver_float
     elif data_type == 'text':
         base_type = str
+        conv_func = conver_string
     elif data_type == 'text_area':
         base_type = str
+        conv_func = conver_string
     elif data_type == 'date':
         base_type = datetime.datetime
+        conv_func = conver_date
     elif data_type == 'date_time':
         base_type = datetime.datetime
+        conv_func = conver_datetime
     else:
         raise Exception('Unknown data_type %s' % data_type)
 
-    if info_type == 'dialog_list':
-        return (list,base_type)
-    elif info_type == 'object_browser':
-        return (list,base_type)
-    elif info_type == 'multiselect':
-        return (list,base_type)
+    if info_type in ['dialog_list','object_browser','multiselect']:
+        return AttributeType(base_type,conv_func,True)
 
-    return base_type
+    return AttributeType(base_type,conv_func,False)
+
 
 def type_check(type_desc,value):
-    if isinstance(type_desc,tuple):
-        if not isinstance(value,type_desc[0]):
-            raise Exception("type check error '%s' is not a %s" % (value,type(type_desc[0])))
-        else:
-            for element in value:
-                if not isinstance(element,type_desc[1]):
-                    raise Exception("type check error the inner elements of '%s' is of type and not of type %s" % (value,type(element),type(type_desc[1])))
-    elif not isinstance(value,type_desc):
-        raise Exception("type check error '%s' is of type %s and not of type %s" % (value,type(value),repr(type_desc)))
-    return True
+    return type_desc.check(value)
 
 
 def type_repr(type_desc):
@@ -154,108 +201,46 @@ def type_repr(type_desc):
 
     :param str type_desc: The type description a representation string is generated for.
     """
-    if isinstance(type_desc,tuple):
-        return "%s of %s" % (type_desc[0].__name__,type_repr(type_desc[1]))
-    else:
-        return type_desc.__name__
+    return repr(type_desc)
 
 
 def value_representation_factory(category,key,value = None):
-    rules = _get_rules()
     category_const = category.get_const()
+    attr_type = category.getFieldType(key)
+    # Weird empty values check
     if value == False:
         value = None
     if isinstance(value,list) and len(value) == 0:
         value = None
     if isinstance(value,list) and isinstance(value[0],list) and len(value[0]) == 0:
         value = None
-    if category_const in rules:
-        if key in rules[category_const]:
-            itype = rules[category_const][key]['type']
-            if value is not None:
-                matches = _apply_rule(rules[category_const][key],value)
-                if len(matches) == 0:
-                    field_object = category.getFieldObject(key)
-                    if not 'type' in field_object['data']:
-                        data_type = "not defined"
-                    else:
-                        data_type = field_object['data']['type']
+    if attr_type.hasRule() and value is not None:
+            matches = _apply_rule(attr_type.rule,value)
+            if len(matches) == 0:
+                field_object = category.getFieldObject(key)
+                if not 'type' in field_object['data']:
+                    data_type = "<not defined>"
+                else:
+                    data_type = field_object['data']['type']
 
-                    logging.fatal(textwrap.dedent(f"""\
-                            There was a fatal error applying a representation mapping for {category_const}.{key}.
-                            According to the API the type of this attribute is "{data_type}" the mapping suggested
-                            a JSON path of "{ rules[category_const][key]['path'] }", this path doesn't match on:
+                logging.fatal(textwrap.dedent(f"""\
+                        There was a fatal error applying a representation mapping for {category_const}.{key}.
+                        According to the API the type of this attribute is "{data_type}" the mapping suggested
+                        a JSON path of "{ attr_type.rule['path'] }", this path doesn't match on:
 
-                              { value }
+                          { value }
 
-                            Either the api result has been changed and hence the mapping didn't work any more,
-                            or we do something utterly wrong.
-                            """))
-                    raise Exception("Error matching value,",rules[category_const][key]['path'],str(value))
-                match_values = [match.value for match in matches]
+                        Either the api result has been changed and hence the mapping didn't work any more,
+                        or we do something utterly wrong.
+                        """))
+                raise Exception("Error matching value,",rules[category_const][key]['path'],str(value))
+            match_values = [match.value for match in matches]
+            if attr_type.isList():
+                return attr_type(match_values)
+            elif len(match_values) == 1:
+                    return attr_type(match_values.pop())
             else:
-                match_values = [None]
-            if itype == 'int':
-                # Dialog Handling?
-                if len(match_values) == 1:
-                  return conver_integer(match_values.pop())
                 raise Exception("Expected one element but got multiple:",str(value))
-            elif itype == 'list_int':
-                return conver_list(conver_integer, match_values)
-            elif itype == 'double':
-                if len(match_values) == 1:
-                    return conver_float(match_values.pop())
-            elif itype == 'gps':
-                if len(match_values) == 1:
-                  return conver_gps(match_values.pop())
-                raise Exception("Expected one element but got multiple:",str(value))
-            elif itype == 'text':
-                if len(match_values) == 1:
-                  return conver_string(match_values.pop())
-                raise Exception("Expected one element but got multiple:",str(value))
-            elif itype == 'list_text':
-                if len(match_values) >= 1:
-                    return conver_list(conver_string, match_values)
-                raise Exception("Expected one element but got multiple:",str(value))
-            elif itype == 'money':
-                if len(match_values) == 1:
-                  return conver_money(match_values.pop())
-                raise exception("Expected one element but got multiple:",str(value))
-            elif itype == 'dialog':
-                if len(match_values) == 1:
-                  return conver_dialog(match_values.pop())
-                raise exception("Expected one element but got multiple:",str(value))
-    return value_representation_factory_by_data_info(category.getFieldObject(key),value)
-
-def value_representation_factory_by_data_info(field_object, value=None):
-    data_type = field_object['data']['type']
-    info_type = field_object['info']['type']
-
-    if data_type == 'int':
-        conver_func = conver_integer
-    elif data_type == 'float':
-        conver_func = conver_float 
-    elif data_type == 'double':
-        if info_type == 'money':
-            conver_func = conver_money
-        else:
-            conver_func = conver_float
-    elif data_type == 'text':
-        conver_func = conver_string
-    elif data_type == 'text_area':
-        conver_func = conver_string
-    elif data_type == 'date':
-        conver_func = conver_date
-    elif data_type == 'date_time':
-        conver_func = conver_datetime
     else:
-        raise Exception('Unknown data_type %s',data_type)
-
-    if info_type == 'dialog_list':
-        return conver_list(conver_func,value)
-    elif info_type == 'object_browser':
-        return conver_list(conver_func,value)
-    elif info_type == 'multiselect':
-        return conver_list(conver_func,value)
-    else:
-        return conver_func(value)
+        # Handle other values
+        return attr_type(value)
