@@ -370,6 +370,9 @@ class CMDBObject(collections.abc.Mapping):
                     if entry_id is not None:
                         parameter['entry'] = entry_id
                     if data is not None:
+                        if len(data) == 0:
+                            logging.debug(f"Category { category_const }({ entry_id }) of Object { self.id } has no updates skipping")
+                            continue
                         parameter['data'] = data
                     requests[len(requests)] = {'method': method, 'parameter': parameter}
             else:
