@@ -210,10 +210,11 @@ def value_representation_factory(category,key,value = None):
     # Weird empty values check
     if value == False:
         value = None
-    if isinstance(value,list) and len(value) == 0:
-        value = None
-    if isinstance(value,list) and isinstance(value[0],list) and len(value[0]) == 0:
-        value = None
+    if isinstance(value,list):
+        if len(value) == 0:
+            value = None
+        elif len(value) == 1 and isinstance(value[0],list) and len(value[0]) == 0:
+            value = None
     if attr_type.hasRule() and value is not None:
             matches = _apply_rule(attr_type.rule,value)
             if len(matches) == 0:
