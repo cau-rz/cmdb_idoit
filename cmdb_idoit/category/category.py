@@ -277,7 +277,8 @@ class CMDBCategoryValues(collections.abc.MutableMapping):
 
 
     def _fill_category_data(self, fields):
-        self.id = fields['id']
+        if id in fields:
+            self.id = fields['id']
         for key in self.category.getFields():
             try:
                 if key in fields:
