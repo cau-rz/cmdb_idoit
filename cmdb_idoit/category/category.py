@@ -80,8 +80,8 @@ class CMDBCategory:
             try:
                 self.field_type[key] = type_determination(self, key)
             except CMDBMissingTypeInformation as e:
-                logging.exception(e)
-                logging.warning(f"Ignore field { key } in category { self.get_const() }")
+                logging.warning(f"Ignore field { self.get_const() }.{ key }")
+                logging.debug(e)
                 del self.fields[key]
 
     def get_id(self):
@@ -185,7 +185,7 @@ class CMDBCategoryValuesList(collections.abc.MutableSequence):
         cat_item = self._dict_to_catval(item)
         self.items.insert(index,cat_item)
 
-    def _is_item_saved(item):
+    def _is_item_saved(self,item):
         return isinstance(item, CMDBCategoryValues) and item.id is not None
 
     def __delitem__(self, index):
@@ -209,7 +209,7 @@ class CMDBCategoryValuesList(collections.abc.MutableSequence):
         if self._is_item_saved(item):
             logging.debug("Add %s[%s] to deleted items" % (self.category.const,item.id))
             self.deleted_items.append(item)
-        self.items.remove(self,item)
+        self.items.remove(item)
 
     def _dict_to_catval(self, value):
         if isinstance(value, CMDBCategoryValues):
@@ -275,15 +275,19 @@ class CMDBCategoryValues(collections.abc.MutableMapping):
         self._change_state = dict()
         self.markUnchanged()
 
-
     def _fill_category_data(self, fields):
+        loading = False
         if id in fields:
+            # Guess that if an id is provided this is an database loading process
+            loading = True
             self.id = fields['id']
         for key in self.category.getFields():
             try:
                 if key in fields:
-                    value = value_representation_factory(self.category, key, fields[key])
-                    self.field_data[key] =  value
+                    if loading:
+                        self.field_data[key] = value_representation_factory(self.category, key, fields[key])
+                    else:
+                        self.field_data[key] = fields[key]
             except CMDBConversionException as e:
                 logging.fatal(textwrap.dedent("""\
                               There was a fatal error while deriving a representativ value for %(category)s.%(attribute)s.
