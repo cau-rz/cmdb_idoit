@@ -39,6 +39,14 @@ error example would be:
   C__CATG__CONTACT contact int $[*].id
 
 
+Ignoring Attributes without type informations
+---------------------------------------------
+
+Since version 1.13 idoit doesn't provide type informations for random attributes.
+We automagically ignore these attriubtes, usage of these attributes results
+in a `KeyError`. Ignoring is reporting by a WARNING log message.
+    
+
 Fixing type values
 ------------------
 
@@ -57,8 +65,6 @@ API
 
 .. autofunction:: cmdb_idoit.category.value_factory.type_determination
 
-.. autofunction:: cmdb_idoit.category.value_factory.type_check
-
-.. autofunction:: cmdb_idoit.category.value_factory.type_repr
-
 .. autofunction:: cmdb_idoit.category.value_factory.get_type_mapping
+
+.. autoclass:: cmdb_idoit.category.value_factory.AttributeType
