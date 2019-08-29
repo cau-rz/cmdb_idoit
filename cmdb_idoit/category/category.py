@@ -277,7 +277,7 @@ class CMDBCategoryValues(collections.abc.MutableMapping):
 
     def _fill_category_data(self, fields):
         loading = False
-        if id in fields:
+        if "id" in fields:
             # Guess that if an id is provided this is an database loading process
             loading = True
             self.id = fields['id']
@@ -287,7 +287,9 @@ class CMDBCategoryValues(collections.abc.MutableMapping):
                     if loading:
                         self.field_data[key] = value_representation_factory(self.category, key, fields[key])
                     else:
-                        self.field_data[key] = fields[key]
+                        # In the none loading case the whole checking and processing of
+                        # user provided values is applied
+                        self[key] = fields[key]
             except CMDBConversionException as e:
                 logging.fatal(textwrap.dedent("""\
                               There was a fatal error while deriving a representativ value for %(category)s.%(attribute)s.
@@ -301,8 +303,9 @@ class CMDBCategoryValues(collections.abc.MutableMapping):
                               % { 'category': self.category.const, 'attribute': key, 'data': repr(fields[key]),'type': repr(self.field_type[key])}))
                 raise e
 
-        # Since this method should only be callend on a loading process, remark all fields to be unchanged 
-        self.markUnchanged()
+        # When callend in a loading process, remark all fields to be unchanged 
+        if loading:
+            self.markUnchanged()
 
     def __setitem__(self, index, value):
         if self.category.hasField(index):
